@@ -8,13 +8,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
-const getConnectionString = () => {
+export const getConnectionString = () => {
   let connStr = process.env.DATABASE_URL;
   if (!connStr || connStr.includes('[YOUR-PASSWORD]')) {
     return null;
   }
-  // If running on Vercel or AWS Lambda with Supabase pooler, automatically use port 6543 (transaction mode)
-  if (process.env.VERCEL && connStr.includes('.pooler.supabase.com:5432')) {
+  // In serverless environments (Vercel) or when connecting to Supabase pooler, use port 6543 (transaction mode)
+  if (connStr.includes('.pooler.supabase.com:5432')) {
     connStr = connStr.replace(':5432', ':6543');
   }
   return connStr;
@@ -26,54 +26,73 @@ export const isPostgresConfigured = () => {
 
 let poolInstance = null;
 
-export const getPool = () => {
+const createNewPool = () => {
   const connStr = getConnectionString();
   if (!connStr) return null;
 
+  const newPool = new Pool({
+    connectionString: connStr,
+    ssl: { rejectUnauthorized: false },
+    max: process.env.VERCEL ? 3 : 5,
+    idleTimeoutMillis: 5000, // release idle connections within 5 seconds so they never go stale
+    connectionTimeoutMillis: 10000,
+  });
+
+  newPool.on('error', (err) => {
+    console.warn('[PostgreSQL Pool Notice]:', err.message);
+    // Reset pool instance if connection was terminated
+    poolInstance = null;
+  });
+
+  return newPool;
+};
+
+export const getPool = () => {
   if (!poolInstance) {
-    try {
-      poolInstance = new Pool({
-        connectionString: connStr,
-        ssl: { rejectUnauthorized: false },
-        max: process.env.VERCEL ? 3 : 10,
-        idleTimeoutMillis: process.env.VERCEL ? 2000 : 30000,
-        connectionTimeoutMillis: 8000,
-      });
-
-      poolInstance.on('error', (err) => {
-        console.error('[PostgreSQL Pool Error]:', err.message);
-        // Reset pool instance if fatal
-        if (err.message.includes('closed') || err.message.includes('timeout')) {
-          poolInstance = null;
-        }
-      });
-    } catch (err) {
-      console.error('[PostgreSQL Init Error]:', err.message);
-      return null;
-    }
+    poolInstance = createNewPool();
   }
-
   return poolInstance;
 };
 
 export const query = async (text, params) => {
-  const p = getPool();
+  let p = getPool();
   if (!p) {
-    throw new Error('PostgreSQL database is not configured. Please verify DATABASE_URL.');
+    throw new Error('Database pool not configured. Please check DATABASE_URL.');
   }
-  return await p.query(text, params);
+
+  try {
+    return await p.query(text, params);
+  } catch (err) {
+    const msg = (err.message || '').toLowerCase();
+    // If connection was closed or timed out due to idle state, immediately reconnect and retry once
+    if (
+      msg.includes('timeout') ||
+      msg.includes('terminated') ||
+      msg.includes('closed') ||
+      msg.includes('econnreset') ||
+      msg.includes('connection refused')
+    ) {
+      console.warn('[PostgreSQL] Stale connection detected. Reconnecting pool and retrying query...');
+      try {
+        p.end().catch(() => {});
+      } catch (_) {}
+      poolInstance = createNewPool();
+      p = poolInstance;
+      if (p) {
+        return await p.query(text, params);
+      }
+    }
+    throw err;
+  }
 };
 
-// Resilient pool proxy so existing code calling pool.query works dynamically
+// Resilient pool proxy so existing code calling pool.query works dynamically and retries on stale connections
 export const pool = new Proxy({}, {
   get(target, prop) {
-    const p = getPool();
     if (prop === 'query') {
-      return (...args) => {
-        if (!p) throw new Error('Database pool not available');
-        return p.query(...args);
-      };
+      return query;
     }
+    const p = getPool();
     if (p && typeof p[prop] === 'function') {
       return p[prop].bind(p);
     }

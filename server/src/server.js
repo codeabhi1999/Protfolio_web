@@ -10,6 +10,7 @@ import fs from 'fs';
 // Configuration imports
 import errorHandler from './middleware/errorMiddleware.js';
 import { isSupabaseConfigured } from './config/supabase.js';
+import { isPostgresConfigured, query } from './config/postgres.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -144,6 +145,39 @@ app.get(['/', '/api'], (req, res) => {
     success: true,
     message: 'Welcome to Abhijeet Chavan Portfolio API Server',
     time: new Date().toISOString(),
+  });
+});
+
+// Diagnostic Health Endpoint (Tests Database and Vercel Runtime Environment)
+app.get(['/api/health', '/health'], async (req, res) => {
+  let dbStatus = 'Not Connected';
+  let adminCount = 0;
+  let dbError = null;
+
+  try {
+    const dbTest = await query('SELECT count(*) as total FROM admin_users');
+    dbStatus = 'Connected';
+    adminCount = Number(dbTest.rows[0].total);
+  } catch (err) {
+    dbStatus = 'Error';
+    dbError = err.message;
+  }
+
+  res.json({
+    status: 'online',
+    platform: process.env.VERCEL ? 'Vercel Serverless' : 'Local Node.js',
+    timestamp: new Date().toISOString(),
+    database: {
+      status: dbStatus,
+      adminCount,
+      error: dbError,
+    },
+    env: {
+      hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+      hasJwtSecret: Boolean(process.env.JWT_SECRET),
+      hasAdminEmail: Boolean(process.env.ADMIN_EMAIL),
+      nodeEnv: process.env.NODE_ENV,
+    },
   });
 });
 
