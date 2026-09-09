@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AdminSidebar from '../components/AdminSidebar';
 import API from '../services/api';
 import toast from 'react-hot-toast';
@@ -14,7 +15,8 @@ import {
   FaEnvelope, 
   FaPhone,
   FaCheckCircle,
-  FaEye
+  FaEye,
+  FaShieldAlt
 } from 'react-icons/fa';
 
 const ManageProfile = () => {
@@ -222,6 +224,13 @@ const ManageProfile = () => {
                 >
                   Socials & Resume
                 </button>
+                <Link
+                  to="/admin/security"
+                  className="px-4 py-2 rounded-xl text-xs font-mono font-bold text-cyberCyan hover:bg-cyberCyan/10 border border-cyberCyan/30 transition-all flex items-center gap-1.5 ml-2"
+                >
+                  <FaShieldAlt size={11} />
+                  <span>Login & Security</span>
+                </Link>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">

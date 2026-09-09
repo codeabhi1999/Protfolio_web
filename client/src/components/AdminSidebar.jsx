@@ -40,6 +40,7 @@ const AdminSidebar = () => {
     { name: 'Skills Matrix', path: '/admin/skills', icon: <FaCode /> },
     { name: 'Projects Studio', path: '/admin/projects', icon: <FaLaptopCode /> },
     { name: 'Career & Timeline', path: '/admin/experience', icon: <FaBriefcase /> },
+    { name: 'Security & Access', path: '/admin/security', icon: <FaShieldAlt /> },
   ];
 
   const handleLogout = async () => {

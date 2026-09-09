@@ -21,6 +21,7 @@ import ManageProfile from './pages/ManageProfile';
 import ManageSkills from './pages/ManageSkills';
 import ManageProjects from './pages/ManageProjects';
 import ManageTimeline from './pages/ManageTimeline';
+import ManageSecurity from './pages/ManageSecurity';
 
 // Public Layout Wrapper with Navbar & Footer
 const BaseLayout = () => {
@@ -87,6 +88,7 @@ function App() {
             <Route path="skills" element={<ManageSkills />} />
             <Route path="projects" element={<ManageProjects />} />
             <Route path="experience" element={<ManageTimeline />} />
+            <Route path="security" element={<ManageSecurity />} />
             {/* Redirects */}
             <Route path="messages" element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="" element={<Navigate to="/admin/dashboard" replace />} />

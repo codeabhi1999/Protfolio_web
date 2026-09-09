@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { dbFetchOne } from '../config/dbHelper.js';
-import { isSupabaseConfigured } from '../config/supabase.js';
+import { isSupabaseConfigured, pool } from '../config/supabase.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'development_jwt_secret_key_abhijeet', {
@@ -108,6 +108,127 @@ export const getMe = async (req, res, next) => {
 
     res.status(401);
     throw new Error('User not authenticated');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update Admin Login Credentials (Email & Password)
+ */
+export const updateCredentials = async (req, res, next) => {
+  const { currentPassword, newEmail, newPassword } = req.body;
+  const userId = req.user?.id || req.user?._id;
+
+  try {
+    if (!currentPassword) {
+      res.status(400);
+      throw new Error('Current password is required to change credentials');
+    }
+
+    if (!newEmail && !newPassword) {
+      res.status(400);
+      throw new Error('Please provide a new email or new password to update');
+    }
+
+    // 1. Fetch current admin record
+    let adminRecord = null;
+    if (isSupabaseConfigured()) {
+      adminRecord = await dbFetchOne('admin_users', { id: userId });
+      if (!adminRecord && req.user?.email) {
+        adminRecord = await dbFetchOne('admin_users', { email: req.user.email.toLowerCase() });
+      }
+    }
+
+    // 2. Verify current password
+    if (adminRecord) {
+      const isMatch = await bcrypt.compare(currentPassword, adminRecord.password);
+      if (!isMatch) {
+        res.status(401);
+        throw new Error('Current password does not match');
+      }
+    } else {
+      const demoPassword = process.env.ADMIN_PASSWORD || 'admin12345';
+      if (currentPassword !== demoPassword) {
+        res.status(401);
+        throw new Error('Current password does not match');
+      }
+    }
+
+    // 3. Prepare updates
+    let updatedEmail = adminRecord ? adminRecord.email : (req.user?.email || 'admin');
+    const updateFields = {};
+
+    if (newEmail && newEmail.trim()) {
+      const formattedEmail = newEmail.trim().toLowerCase();
+      // Verify email uniqueness
+      if (isSupabaseConfigured()) {
+        const existing = await dbFetchOne('admin_users', { email: formattedEmail });
+        if (existing && existing.id !== (adminRecord ? adminRecord.id : null)) {
+          res.status(400);
+          throw new Error('This email address is already in use by another admin');
+        }
+      }
+      updatedEmail = formattedEmail;
+      updateFields.email = formattedEmail;
+    }
+
+    if (newPassword && newPassword.trim()) {
+      if (newPassword.trim().length < 6) {
+        res.status(400);
+        throw new Error('New password must be at least 6 characters');
+      }
+      const salt = await bcrypt.genSalt(10);
+      updateFields.password = await bcrypt.hash(newPassword.trim(), salt);
+    }
+
+    // 4. Update in database
+    let finalId = adminRecord ? adminRecord.id : userId;
+    if (isSupabaseConfigured() && pool) {
+      if (adminRecord) {
+        await pool.query(
+          `UPDATE public.admin_users 
+           SET email = COALESCE($1, email),
+               password = COALESCE($2, password),
+               updated_at = NOW()
+           WHERE id = $3`,
+          [updateFields.email || null, updateFields.password || null, adminRecord.id]
+        );
+      } else {
+        const defaultHash = updateFields.password || await bcrypt.hash(currentPassword, await bcrypt.genSalt(10));
+        const inserted = await pool.query(
+          `INSERT INTO public.admin_users (email, password, role) 
+           VALUES ($1, $2, 'admin') 
+           RETURNING id, email`,
+          [updatedEmail, defaultHash]
+        );
+        if (inserted.rows.length > 0) {
+          finalId = inserted.rows[0].id;
+        }
+      }
+    }
+
+    // 5. Generate fresh token
+    const token = generateToken(finalId);
+    const cookieOptions = {
+      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    };
+
+    res.cookie('token', token, cookieOptions);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login credentials updated successfully!',
+      token,
+      user: {
+        id: finalId,
+        _id: finalId,
+        email: updatedEmail,
+      },
+    });
   } catch (error) {
     next(error);
   }
