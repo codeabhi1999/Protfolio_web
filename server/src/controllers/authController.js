@@ -10,12 +10,14 @@ const generateToken = (id) => {
 };
 
 export const loginAdmin = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
 
   try {
     if (!email || !password) {
-      res.status(400);
-      throw new Error('Please enter both email and password');
+      return res.status(400).json({
+        success: false,
+        message: 'Please enter both email and password',
+      });
     }
 
     let authenticatedUserId = null;
@@ -50,19 +52,25 @@ export const loginAdmin = async (req, res, next) => {
     }
 
     if (!authenticatedUserId) {
-      res.status(401);
-      throw new Error('Invalid email or password');
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password',
+      });
     }
 
     const token = generateToken(authenticatedUserId);
-    const cookieOptions = {
-      expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-    };
 
-    res.cookie('token', token, cookieOptions);
+    try {
+      const cookieOptions = {
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      };
+      res.cookie('token', token, cookieOptions);
+    } catch (cookieErr) {
+      console.warn('[Cookie Setting Warning]:', cookieErr.message);
+    }
 
     return res.status(200).json({
       success: true,
@@ -75,7 +83,11 @@ export const loginAdmin = async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    console.error('[Login Controller Error]:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error occurred during login',
+    });
   }
 };
 

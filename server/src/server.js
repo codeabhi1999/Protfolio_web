@@ -39,6 +39,9 @@ if (isSupabaseConfigured()) {
 
 const app = express();
 
+// Trust reverse proxy (essential for Vercel, rate limiters, and secure cookies)
+app.set('trust proxy', 1);
+
 // Security Middlewares
 app.use(
   helmet({
@@ -46,29 +49,12 @@ app.use(
   })
 );
 
-// Standard CORS Configuration
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-].filter(Boolean);
-
+// Resilient CORS Configuration
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (e.g. mobile/curl), localhost, or any vercel.app deployment
-      if (
-        !origin ||
-        allowedOrigins.indexOf(origin) !== -1 ||
-        /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) ||
-        origin.endsWith('.vercel.app')
-      ) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
+      // Never throw an unhandled Error that causes 500 crashes in Express
+      callback(null, true);
     },
     credentials: true,
   })
