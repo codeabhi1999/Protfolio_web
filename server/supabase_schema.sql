@@ -213,24 +213,55 @@ ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access to portfolio tables
+DROP POLICY IF EXISTS "Public Read Profiles" ON public.profiles;
 CREATE POLICY "Public Read Profiles" ON public.profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Skills" ON public.skills;
 CREATE POLICY "Public Read Skills" ON public.skills FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Projects" ON public.projects;
 CREATE POLICY "Public Read Projects" ON public.projects FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Experiences" ON public.experiences;
 CREATE POLICY "Public Read Experiences" ON public.experiences FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Educations" ON public.educations;
 CREATE POLICY "Public Read Educations" ON public.educations FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Certifications" ON public.certifications;
 CREATE POLICY "Public Read Certifications" ON public.certifications FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Services" ON public.services;
 CREATE POLICY "Public Read Services" ON public.services FOR SELECT USING (true);
 
 -- Allow public insertion for contact form messages
+DROP POLICY IF EXISTS "Public Insert Messages" ON public.contact_messages;
 CREATE POLICY "Public Insert Messages" ON public.contact_messages FOR INSERT WITH CHECK (true);
 
 -- Allow service role / backend API full access to all tables
+DROP POLICY IF EXISTS "Service Role Full Access Profiles" ON public.profiles;
 CREATE POLICY "Service Role Full Access Profiles" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Skills" ON public.skills;
 CREATE POLICY "Service Role Full Access Skills" ON public.skills FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Projects" ON public.projects;
 CREATE POLICY "Service Role Full Access Projects" ON public.projects FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Experiences" ON public.experiences;
 CREATE POLICY "Service Role Full Access Experiences" ON public.experiences FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Educations" ON public.educations;
 CREATE POLICY "Service Role Full Access Educations" ON public.educations FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Certifications" ON public.certifications;
 CREATE POLICY "Service Role Full Access Certifications" ON public.certifications FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Services" ON public.services;
 CREATE POLICY "Service Role Full Access Services" ON public.services FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Messages" ON public.contact_messages;
 CREATE POLICY "Service Role Full Access Messages" ON public.contact_messages FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Service Role Full Access Admin Users" ON public.admin_users;
 CREATE POLICY "Service Role Full Access Admin Users" ON public.admin_users FOR ALL USING (true) WITH CHECK (true);
