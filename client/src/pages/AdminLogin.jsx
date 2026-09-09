@@ -21,8 +21,8 @@ const AdminLogin = () => {
   }, [isAuthenticated, navigate]);
 
   const handleQuickFill = () => {
-    setEmail('abhijeet.chavan.dev@gmail.com');
-    setPassword('admin12345');
+    setEmail('abhijeet.chavan@gmail.com');
+    setPassword('admin123456');
     toast.success('Admin credentials autofilled!');
   };
 
