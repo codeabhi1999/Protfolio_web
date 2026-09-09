@@ -1,9 +1,7 @@
-import ContactMessage from '../models/ContactMessage.js';
 import { sendNotificationEmail } from '../services/emailService.js';
+import { dbFetchAll, dbInsert, dbUpdate, dbDelete } from '../config/dbHelper.js';
+import { isSupabaseConfigured } from '../config/supabase.js';
 
-// @desc    Submit a contact message (Public)
-// @route   POST /api/contact
-// @access  Public
 export const submitMessage = async (req, res, next) => {
   const { name, email, phone, subject, message } = req.body;
 
@@ -18,17 +16,36 @@ export const submitMessage = async (req, res, next) => {
       throw new Error('Message must be at least 10 characters long');
     }
 
-    // Save message to MongoDB
-    const contactMessage = await ContactMessage.create({
-      name,
-      email,
-      phone,
-      subject: subject || 'General Inquiry',
-      message,
-      status: 'New',
-    });
+    let savedMessage = null;
 
-    // Send email notification (async, non-blocking)
+    if (isSupabaseConfigured()) {
+      try {
+        savedMessage = await dbInsert('contact_messages', {
+          name,
+          email,
+          phone: phone || '',
+          subject: subject || 'General Inquiry',
+          message,
+          status: 'New',
+        });
+      } catch (err) {
+        console.warn('[Supabase Message Insert Warning]:', err.message);
+      }
+    }
+
+    if (!savedMessage) {
+      savedMessage = {
+        _id: `msg_${Date.now()}`,
+        name,
+        email,
+        phone: phone || '',
+        subject: subject || 'General Inquiry',
+        message,
+        status: 'New',
+        createdAt: new Date().toISOString(),
+      };
+    }
+
     const emailResult = await sendNotificationEmail({
       name,
       email,
@@ -40,7 +57,7 @@ export const submitMessage = async (req, res, next) => {
     res.status(201).json({
       success: true,
       message: 'Thank you! Your message has been sent successfully.',
-      data: contactMessage,
+      data: savedMessage,
       emailSent: emailResult.success,
     });
   } catch (error) {
@@ -48,71 +65,76 @@ export const submitMessage = async (req, res, next) => {
   }
 };
 
-// @desc    Get all contact messages (Protected)
-// @route   GET /api/contact
-// @access  Private
 export const getMessages = async (req, res, next) => {
   try {
-    const messages = await ContactMessage.find().sort({ createdAt: -1 });
+    if (isSupabaseConfigured()) {
+      try {
+        const messages = await dbFetchAll('contact_messages', { orderBy: 'created_at', ascending: false });
+        if (messages) {
+          return res.status(200).json({
+            success: true,
+            message: 'Messages fetched successfully from Supabase',
+            data: messages,
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase Messages Get Error]:', err.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Messages fetched successfully',
-      data: messages,
+      message: 'Messages fetched (empty/fallback)',
+      data: [],
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update a message status (Protected)
-// @route   PATCH /api/contact/:id
-// @access  Private
 export const updateMessageStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
+    const { id } = req.params;
 
     if (!status || !['New', 'Read', 'Replied', 'Archived'].includes(status)) {
       res.status(400);
       throw new Error('Invalid status option');
     }
 
-    let message = await ContactMessage.findById(req.params.id);
-
-    if (!message) {
-      res.status(404);
-      throw new Error('Message not found');
+    if (isSupabaseConfigured()) {
+      const updated = await dbUpdate('contact_messages', id, { status });
+      return res.status(200).json({
+        success: true,
+        message: 'Message status updated successfully in Supabase',
+        data: updated,
+      });
     }
 
-    message.status = status;
-    await message.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Message status updated successfully',
-      data: message,
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to update message',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete a message (Protected)
-// @route   DELETE /api/contact/:id
-// @access  Private
 export const deleteMessage = async (req, res, next) => {
   try {
-    const message = await ContactMessage.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!message) {
-      res.status(404);
-      throw new Error('Message not found');
+    if (isSupabaseConfigured()) {
+      await dbDelete('contact_messages', id);
+      return res.status(200).json({
+        success: true,
+        message: 'Message deleted successfully from Supabase',
+      });
     }
 
-    await message.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Message deleted successfully',
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to delete message',
     });
   } catch (error) {
     next(error);

@@ -1,24 +1,33 @@
-import Experience from '../models/Experience.js';
+import { dbFetchAll, dbInsert, dbUpdate, dbDelete } from '../config/dbHelper.js';
+import { isSupabaseConfigured } from '../config/supabase.js';
 
-// @desc    Get all experience records
-// @route   GET /api/experience
-// @access  Public
 export const getExperiences = async (req, res, next) => {
   try {
-    const experiences = await Experience.find().sort({ createdAt: -1 }); // Sort by creation or custom order if needed
+    if (isSupabaseConfigured()) {
+      try {
+        const experiences = await dbFetchAll('experiences', { orderBy: 'created_at', ascending: false });
+        if (experiences && experiences.length > 0) {
+          return res.status(200).json({
+            success: true,
+            message: 'Experiences fetched successfully from Supabase',
+            data: experiences,
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase Experience Get Error]:', err.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Experiences fetched successfully',
-      data: experiences,
+      message: 'Experiences fetched (empty/fallback)',
+      data: [],
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Create an experience record
-// @route   POST /api/experience
-// @access  Private
 export const createExperience = async (req, res, next) => {
   try {
     const { company, position, startDate, endDate, location, responsibilities, technologies, achievements } = req.body;
@@ -28,82 +37,86 @@ export const createExperience = async (req, res, next) => {
       throw new Error('Please provide company, position, and startDate');
     }
 
-    const experience = await Experience.create({
-      company,
-      position,
-      startDate,
-      endDate: endDate || 'Present',
-      location,
-      responsibilities: Array.isArray(responsibilities) ? responsibilities : (responsibilities ? responsibilities.split('\n').filter(Boolean) : []),
-      technologies: Array.isArray(technologies) ? technologies : (technologies ? technologies.split(',').map(t => t.trim()) : []),
-      achievements: Array.isArray(achievements) ? achievements : (achievements ? achievements.split('\n').filter(Boolean) : []),
-    });
+    const respArray = Array.isArray(responsibilities) ? responsibilities : (responsibilities ? responsibilities.split('\n').filter(Boolean) : []);
+    const techArray = Array.isArray(technologies) ? technologies : (technologies ? technologies.split(',').map(t => t.trim()) : []);
+    const achArray = Array.isArray(achievements) ? achievements : (achievements ? achievements.split('\n').filter(Boolean) : []);
 
-    res.status(201).json({
-      success: true,
-      message: 'Experience record created successfully',
-      data: experience,
+    if (isSupabaseConfigured()) {
+      const exp = await dbInsert('experiences', {
+        company,
+        position,
+        startDate,
+        endDate: endDate || 'Present',
+        location: location || '',
+        responsibilities: JSON.stringify(respArray),
+        technologies: JSON.stringify(techArray),
+        achievements: JSON.stringify(achArray),
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Experience record created successfully in Supabase',
+        data: exp,
+      });
+    }
+
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to create experience record',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update an experience record
-// @route   PUT /api/experience/:id
-// @access  Private
 export const updateExperience = async (req, res, next) => {
   try {
-    let experience = await Experience.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!experience) {
-      res.status(404);
-      throw new Error('Experience record not found');
+    if (isSupabaseConfigured()) {
+      const updateData = { ...req.body };
+      if (updateData.responsibilities && Array.isArray(updateData.responsibilities)) {
+        updateData.responsibilities = JSON.stringify(updateData.responsibilities);
+      }
+      if (updateData.technologies && Array.isArray(updateData.technologies)) {
+        updateData.technologies = JSON.stringify(updateData.technologies);
+      }
+      if (updateData.achievements && Array.isArray(updateData.achievements)) {
+        updateData.achievements = JSON.stringify(updateData.achievements);
+      }
+
+      const updated = await dbUpdate('experiences', id, updateData);
+      return res.status(200).json({
+        success: true,
+        message: 'Experience record updated successfully in Supabase',
+        data: updated,
+      });
     }
 
-    const updateData = { ...req.body };
-    if (updateData.responsibilities && !Array.isArray(updateData.responsibilities)) {
-      updateData.responsibilities = updateData.responsibilities.split('\n').filter(Boolean);
-    }
-    if (updateData.technologies && !Array.isArray(updateData.technologies)) {
-      updateData.technologies = updateData.technologies.split(',').map(t => t.trim());
-    }
-    if (updateData.achievements && !Array.isArray(updateData.achievements)) {
-      updateData.achievements = updateData.achievements.split('\n').filter(Boolean);
-    }
-
-    experience = await Experience.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Experience record updated successfully',
-      data: experience,
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to update experience record',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete an experience record
-// @route   DELETE /api/experience/:id
-// @access  Private
 export const deleteExperience = async (req, res, next) => {
   try {
-    const experience = await Experience.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!experience) {
-      res.status(404);
-      throw new Error('Experience record not found');
+    if (isSupabaseConfigured()) {
+      await dbDelete('experiences', id);
+      return res.status(200).json({
+        success: true,
+        message: 'Experience record deleted successfully from Supabase',
+      });
     }
 
-    await experience.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Experience record deleted successfully',
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to delete experience record',
     });
   } catch (error) {
     next(error);

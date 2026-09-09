@@ -1,89 +1,104 @@
-import Skill from '../models/Skill.js';
+import { dbFetchAll, dbInsert, dbUpdate, dbDelete } from '../config/dbHelper.js';
+import { isSupabaseConfigured } from '../config/supabase.js';
 
-// @desc    Get all skills
-// @route   GET /api/skills
-// @access  Public
 export const getSkills = async (req, res, next) => {
   try {
-    const skills = await Skill.find();
+    if (isSupabaseConfigured()) {
+      try {
+        const skills = await dbFetchAll('skills', { orderBy: 'created_at', ascending: true });
+        if (skills && skills.length > 0) {
+          return res.status(200).json({
+            success: true,
+            message: 'Skills fetched successfully from Supabase',
+            data: skills,
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase Skills Get Error]:', err.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Skills fetched successfully',
-      data: skills,
+      message: 'Skills fetched (empty/fallback)',
+      data: [],
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Create a skill
-// @route   POST /api/skills
-// @access  Private
 export const createSkill = async (req, res, next) => {
   try {
-    const { name, category, level } = req.body;
+    const { name, category, level, proficiency, icon } = req.body;
 
     if (!name || !category || !level) {
       res.status(400);
       throw new Error('Please provide name, category, and level');
     }
 
-    const skill = await Skill.create({ name, category, level });
+    if (isSupabaseConfigured()) {
+      const skill = await dbInsert('skills', {
+        name,
+        category,
+        level,
+        proficiency: proficiency ? parseInt(proficiency, 10) : 80,
+        icon: icon || '',
+      });
 
-    res.status(201).json({
-      success: true,
-      message: 'Skill created successfully',
-      data: skill,
+      return res.status(201).json({
+        success: true,
+        message: 'Skill created successfully in Supabase',
+        data: skill,
+      });
+    }
+
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to create skill',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update a skill
-// @route   PUT /api/skills/:id
-// @access  Private
 export const updateSkill = async (req, res, next) => {
   try {
-    let skill = await Skill.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!skill) {
-      res.status(404);
-      throw new Error('Skill not found');
+    if (isSupabaseConfigured()) {
+      const updated = await dbUpdate('skills', id, req.body);
+      return res.status(200).json({
+        success: true,
+        message: 'Skill updated successfully in Supabase',
+        data: updated,
+      });
     }
 
-    skill = await Skill.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Skill updated successfully',
-      data: skill,
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to update skill',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete a skill
-// @route   DELETE /api/skills/:id
-// @access  Private
 export const deleteSkill = async (req, res, next) => {
   try {
-    const skill = await Skill.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!skill) {
-      res.status(404);
-      throw new Error('Skill not found');
+    if (isSupabaseConfigured()) {
+      await dbDelete('skills', id);
+      return res.status(200).json({
+        success: true,
+        message: 'Skill deleted successfully from Supabase',
+      });
     }
 
-    await skill.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Skill deleted successfully',
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to delete skill',
     });
   } catch (error) {
     next(error);

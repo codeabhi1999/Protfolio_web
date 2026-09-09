@@ -8,8 +8,8 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 
 // Configuration imports
-import connectDB from './config/db.js';
 import errorHandler from './middleware/errorMiddleware.js';
+import { isSupabaseConfigured } from './config/supabase.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -31,7 +31,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Initialize DB Connection
-connectDB();
+if (isSupabaseConfigured()) {
+  console.log('⚡ [Database] Connected to Supabase Cloud PostgreSQL');
+} else {
+  console.warn('⚠️ [Database] Supabase credentials not found in .env. Configure DATABASE_URL in server/.env');
+}
 
 const app = express();
 
@@ -44,17 +48,23 @@ app.use(
 
 // Standard CORS Configuration
 const allowedOrigins = [
-  process.env.CLIENT_URL || 'http://localhost:5173',
+  process.env.CLIENT_URL,
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
-];
+].filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin or any localhost origin during development
-      if (!origin || allowedOrigins.indexOf(origin) !== -1 || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+      // Allow requests with no origin (e.g. mobile/curl), localhost, or any vercel.app deployment
+      if (
+        !origin ||
+        allowedOrigins.indexOf(origin) !== -1 ||
+        /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) ||
+        origin.endsWith('.vercel.app')
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -85,10 +95,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// Create uploads directory if it does not exist
+// Create uploads directory if it does not exist (safely handled for serverless environments)
 const publicUploadsDir = path.join(__dirname, '../public/uploads');
-if (!fs.existsSync(publicUploadsDir)) {
-  fs.mkdirSync(publicUploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(publicUploadsDir)) {
+    fs.mkdirSync(publicUploadsDir, { recursive: true });
+  }
+} catch (e) {
+  // In read-only serverless environments like AWS Lambda/Vercel, ignore local fs errors
 }
 
 // Serve file uploads statically
@@ -144,8 +158,12 @@ app.get('/', (req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
-// Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+// Start Server locally (avoid starting listen loop on Vercel Serverless)
+const PORT = process.env.PORT || 5001;
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  });
+}
+
+export default app;

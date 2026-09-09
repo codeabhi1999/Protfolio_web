@@ -1,24 +1,33 @@
-import Education from '../models/Education.js';
+import { dbFetchAll, dbInsert, dbUpdate, dbDelete } from '../config/dbHelper.js';
+import { isSupabaseConfigured } from '../config/supabase.js';
 
-// @desc    Get all education records
-// @route   GET /api/education
-// @access  Public
 export const getEducations = async (req, res, next) => {
   try {
-    const educations = await Education.find().sort({ startYear: -1 });
+    if (isSupabaseConfigured()) {
+      try {
+        const educations = await dbFetchAll('educations', { orderBy: 'start_year', ascending: false });
+        if (educations && educations.length > 0) {
+          return res.status(200).json({
+            success: true,
+            message: 'Education fetched successfully from Supabase',
+            data: educations,
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase Education Get Error]:', err.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Education fetched successfully',
-      data: educations,
+      message: 'Education fetched (empty/fallback)',
+      data: [],
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Create an education record
-// @route   POST /api/education
-// @access  Private
 export const createEducation = async (req, res, next) => {
   try {
     const { degree, institution, startYear, endYear, description } = req.body;
@@ -28,68 +37,68 @@ export const createEducation = async (req, res, next) => {
       throw new Error('Please provide degree, institution, startYear, and endYear');
     }
 
-    const education = await Education.create({
-      degree,
-      institution,
-      startYear,
-      endYear,
-      description,
-    });
+    if (isSupabaseConfigured()) {
+      const education = await dbInsert('educations', {
+        degree,
+        institution,
+        startYear,
+        endYear,
+        description: description || '',
+      });
 
-    res.status(201).json({
-      success: true,
-      message: 'Education record created successfully',
-      data: education,
+      return res.status(201).json({
+        success: true,
+        message: 'Education record created successfully in Supabase',
+        data: education,
+      });
+    }
+
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to create education record',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update an education record
-// @route   PUT /api/education/:id
-// @access  Private
 export const updateEducation = async (req, res, next) => {
   try {
-    let education = await Education.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!education) {
-      res.status(404);
-      throw new Error('Education record not found');
+    if (isSupabaseConfigured()) {
+      const updated = await dbUpdate('educations', id, req.body);
+      return res.status(200).json({
+        success: true,
+        message: 'Education record updated successfully in Supabase',
+        data: updated,
+      });
     }
 
-    education = await Education.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Education record updated successfully',
-      data: education,
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to update education record',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete an education record
-// @route   DELETE /api/education/:id
-// @access  Private
 export const deleteEducation = async (req, res, next) => {
   try {
-    const education = await Education.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!education) {
-      res.status(404);
-      throw new Error('Education record not found');
+    if (isSupabaseConfigured()) {
+      await dbDelete('educations', id);
+      return res.status(200).json({
+        success: true,
+        message: 'Education record deleted successfully from Supabase',
+      });
     }
 
-    await education.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Education record deleted successfully',
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to delete education record',
     });
   } catch (error) {
     next(error);

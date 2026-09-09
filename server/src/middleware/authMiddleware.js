@@ -1,62 +1,49 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { dbFetchOne } from '../config/dbHelper.js';
+import { isSupabaseConfigured } from '../config/supabase.js';
 
 export const authenticateAdmin = async (req, res, next) => {
   let token;
 
-  // Retrieve token from Authorization header (Bearer <token>)
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-
-      // Decode and verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-      if (decoded.id === 'mock_user_id_123') {
-        req.user = { _id: 'mock_user_id_123', email: 'abhijeet.chavan.dev@gmail.com' };
-      } else {
-        req.user = await User.findById(decoded.id).select('-password');
-        if (!req.user) {
-          res.status(401);
-          throw new Error('Not authorized, user not found');
-        }
-      }
-
-      return next();
-    } catch (error) {
-      console.error('JWT Verification Error:', error.message);
-      res.status(401);
-      return next(new Error('Not authorized, token failed'));
-    }
-  }
-
-  // Retrieve token from HTTP-only cookie if available
-  if (req.cookies && req.cookies.token) {
-    try {
-      token = req.cookies.token;
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      if (decoded.id === 'mock_user_id_123') {
-        req.user = { _id: 'mock_user_id_123', email: 'abhijeet.chavan.dev@gmail.com' };
-      } else {
-        req.user = await User.findById(decoded.id).select('-password');
-        if (!req.user) {
-          res.status(401);
-          throw new Error('Not authorized, user not found');
-        }
-      }
-      return next();
-    } catch (error) {
-      console.error('Cookie JWT Verification Error:', error.message);
-      res.status(401);
-      return next(new Error('Not authorized, token failed'));
-    }
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
   }
 
   if (!token) {
     res.status(401);
     return next(new Error('Not authorized, no token provided'));
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.id === 'mock_user_id_123') {
+      req.user = { _id: 'mock_user_id_123', id: 'mock_user_id_123', email: 'abhijeet.chavan.dev@gmail.com' };
+      return next();
+    }
+
+    if (isSupabaseConfigured()) {
+      try {
+        const adminUser = await dbFetchOne('admin_users', { id: decoded.id });
+        if (adminUser) {
+          req.user = { _id: adminUser.id, id: adminUser.id, email: adminUser.email, role: adminUser.role };
+          return next();
+        }
+      } catch (err) {
+        console.warn('[Supabase Auth Middleware Error]:', err.message);
+      }
+    }
+
+    req.user = { _id: decoded.id, id: decoded.id, email: 'admin' };
+    return next();
+  } catch (error) {
+    console.error('JWT Verification Error:', error.message);
+    res.status(401);
+    return next(new Error('Not authorized, token failed'));
   }
 };

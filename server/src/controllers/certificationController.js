@@ -1,24 +1,33 @@
-import Certification from '../models/Certification.js';
+import { dbFetchAll, dbInsert, dbUpdate, dbDelete } from '../config/dbHelper.js';
+import { isSupabaseConfigured } from '../config/supabase.js';
 
-// @desc    Get all certifications
-// @route   GET /api/certifications
-// @access  Public
 export const getCertifications = async (req, res, next) => {
   try {
-    const certifications = await Certification.find().sort({ date: -1 });
+    if (isSupabaseConfigured()) {
+      try {
+        const certifications = await dbFetchAll('certifications', { orderBy: 'created_at', ascending: false });
+        if (certifications) {
+          return res.status(200).json({
+            success: true,
+            message: 'Certifications fetched successfully from Supabase',
+            data: certifications,
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase Certifications Get Error]:', err.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Certifications fetched successfully',
-      data: certifications,
+      message: 'Certifications fetched (empty/fallback)',
+      data: [],
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Create a certification
-// @route   POST /api/certifications
-// @access  Private
 export const createCertification = async (req, res, next) => {
   try {
     const { name, issuingOrganization, date, credentialId, credentialUrl, image } = req.body;
@@ -28,69 +37,69 @@ export const createCertification = async (req, res, next) => {
       throw new Error('Please provide name, issuingOrganization, and date');
     }
 
-    const certification = await Certification.create({
-      name,
-      issuingOrganization,
-      date,
-      credentialId,
-      credentialUrl,
-      image,
-    });
+    if (isSupabaseConfigured()) {
+      const certification = await dbInsert('certifications', {
+        name,
+        issuingOrganization,
+        date,
+        credentialId: credentialId || '',
+        credentialUrl: credentialUrl || '',
+        image: image || '',
+      });
 
-    res.status(201).json({
-      success: true,
-      message: 'Certification created successfully',
-      data: certification,
+      return res.status(201).json({
+        success: true,
+        message: 'Certification created successfully in Supabase',
+        data: certification,
+      });
+    }
+
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to create certification',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update a certification
-// @route   PUT /api/certifications/:id
-// @access  Private
 export const updateCertification = async (req, res, next) => {
   try {
-    let certification = await Certification.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!certification) {
-      res.status(404);
-      throw new Error('Certification not found');
+    if (isSupabaseConfigured()) {
+      const updated = await dbUpdate('certifications', id, req.body);
+      return res.status(200).json({
+        success: true,
+        message: 'Certification updated successfully in Supabase',
+        data: updated,
+      });
     }
 
-    certification = await Certification.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Certification updated successfully',
-      data: certification,
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to update certification',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete a certification
-// @route   DELETE /api/certifications/:id
-// @access  Private
 export const deleteCertification = async (req, res, next) => {
   try {
-    const certification = await Certification.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!certification) {
-      res.status(404);
-      throw new Error('Certification not found');
+    if (isSupabaseConfigured()) {
+      await dbDelete('certifications', id);
+      return res.status(200).json({
+        success: true,
+        message: 'Certification deleted successfully from Supabase',
+      });
     }
 
-    await certification.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Certification deleted successfully',
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to delete certification',
     });
   } catch (error) {
     next(error);

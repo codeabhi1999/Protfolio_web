@@ -2,9 +2,9 @@ import axios from 'axios';
 
 // Configure Axios Instance
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5001/api'),
   withCredentials: true, // Crucial for cookie passing
-  timeout: 2000, // Drop requests if taking too long to load fast
+  timeout: 15000, // 15s to allow serverless cold starts
 });
 
 // Request interceptor to attach authentication token

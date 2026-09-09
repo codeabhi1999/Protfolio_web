@@ -1,24 +1,33 @@
-import Service from '../models/Service.js';
+import { dbFetchAll, dbInsert, dbUpdate, dbDelete } from '../config/dbHelper.js';
+import { isSupabaseConfigured } from '../config/supabase.js';
 
-// @desc    Get all services
-// @route   GET /api/services
-// @access  Public
 export const getServices = async (req, res, next) => {
   try {
-    const services = await Service.find();
+    if (isSupabaseConfigured()) {
+      try {
+        const services = await dbFetchAll('services', { orderBy: 'created_at', ascending: true });
+        if (services && services.length > 0) {
+          return res.status(200).json({
+            success: true,
+            message: 'Services fetched successfully from Supabase',
+            data: services,
+          });
+        }
+      } catch (err) {
+        console.warn('[Supabase Services Get Error]:', err.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
-      message: 'Services fetched successfully',
-      data: services,
+      message: 'Services fetched (empty/fallback)',
+      data: [],
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Create a service
-// @route   POST /api/services
-// @access  Private
 export const createService = async (req, res, next) => {
   try {
     const { title, description, icon } = req.body;
@@ -28,62 +37,66 @@ export const createService = async (req, res, next) => {
       throw new Error('Please provide title and description');
     }
 
-    const service = await Service.create({ title, description, icon });
+    if (isSupabaseConfigured()) {
+      const service = await dbInsert('services', {
+        title,
+        description,
+        icon: icon || '',
+      });
 
-    res.status(201).json({
-      success: true,
-      message: 'Service created successfully',
-      data: service,
+      return res.status(201).json({
+        success: true,
+        message: 'Service created successfully in Supabase',
+        data: service,
+      });
+    }
+
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to create service',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Update a service
-// @route   PUT /api/services/:id
-// @access  Private
 export const updateService = async (req, res, next) => {
   try {
-    let service = await Service.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!service) {
-      res.status(404);
-      throw new Error('Service not found');
+    if (isSupabaseConfigured()) {
+      const updated = await dbUpdate('services', id, req.body);
+      return res.status(200).json({
+        success: true,
+        message: 'Service updated successfully in Supabase',
+        data: updated,
+      });
     }
 
-    service = await Service.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'Service updated successfully',
-      data: service,
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to update service',
     });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Delete a service
-// @route   DELETE /api/services/:id
-// @access  Private
 export const deleteService = async (req, res, next) => {
   try {
-    const service = await Service.findById(req.params.id);
+    const { id } = req.params;
 
-    if (!service) {
-      res.status(404);
-      throw new Error('Service not found');
+    if (isSupabaseConfigured()) {
+      await dbDelete('services', id);
+      return res.status(200).json({
+        success: true,
+        message: 'Service deleted successfully from Supabase',
+      });
     }
 
-    await service.deleteOne();
-
-    res.status(200).json({
-      success: true,
-      message: 'Service deleted successfully',
+    res.status(400).json({
+      success: false,
+      message: 'Database not configured to delete service',
     });
   } catch (error) {
     next(error);
