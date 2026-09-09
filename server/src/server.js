@@ -187,12 +187,15 @@ app.use((req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
-// Start Server locally (avoid starting listen loop on Vercel Serverless)
+// Start Server locally (avoid starting listen loop on Vercel Serverless or when imported)
 const PORT = process.env.PORT || 5001;
-if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-  });
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  const isDirectRun = process.argv[1] && (process.argv[1].includes('server.js') || process.argv[1].includes('nodemon'));
+  if (isDirectRun) {
+    app.listen(PORT, () => {
+      console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    });
+  }
 }
 
 export default app;
