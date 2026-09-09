@@ -1,82 +1,86 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import * as FaIcons from 'react-icons/fa';
+import { FaLaptopCode, FaCheck } from 'react-icons/fa';
 
 const ServicesSection = ({ services }) => {
-  // Helper to load icons dynamically from string names
   const renderIcon = (iconName) => {
     const IconComponent = FaIcons[iconName];
     if (IconComponent) {
       return <IconComponent />;
     }
-    // Fallback icon
-    return <FaIcons.FaLaptopCode />;
+    return <FaLaptopCode />;
   };
 
   return (
-    <section id="services" className="py-24 bg-white dark:bg-darkBg relative">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="services" className="py-24 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
+        
         {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyberCyan/10 border border-cyberCyan/20 text-xs font-mono font-semibold text-cyberCyan uppercase tracking-widest mb-3"
+          >
+            Capabilities
+          </motion.div>
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white"
+            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-display text-white tracking-tight"
           >
-            My Services
+            Engineering Solutions & Services
           </motion.h2>
-          <motion.div
-            initial={{ width: 0 }}
-            whileInView={{ width: '80px' }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="h-1 bg-primary-500 mx-auto mt-4 rounded-full"
-          ></motion.div>
           <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="text-gray-500 dark:text-gray-400 mt-4 text-sm sm:text-base"
+            transition={{ delay: 0.2 }}
+            className="text-gray-400 mt-4 text-sm sm:text-base max-w-2xl mx-auto"
           >
-            Professional development offerings and software solutions I provide.
+            Full life-cycle software development offerings tailored for performance, security, and scalability.
           </motion.p>
         </div>
 
         {/* Services Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => (
             <motion.div
               initial={{ opacity: 0, y: 25 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
               key={service._id || index}
-              className="p-8 bg-gray-50 dark:bg-darkCard rounded-2xl border border-gray-200 dark:border-darkBorder/40 shadow-sm flex flex-col items-start gap-5 hover:shadow-md group transition-all duration-300"
+              className="p-8 rounded-3xl glass-card flex flex-col justify-between group hover:border-cyberCyan/50 relative overflow-hidden"
             >
-              {/* Icon Container */}
-              <div className="text-3xl text-primary-500 bg-primary-100 dark:bg-primary-950/40 p-4 rounded-2xl group-hover:scale-105 transition-transform duration-300">
-                {renderIcon(service.icon)}
-              </div>
+              <div className="relative z-10">
+                {/* Icon Container with Glow */}
+                <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 text-cyberCyan flex items-center justify-center text-2xl group-hover:scale-110 group-hover:border-cyberCyan/40 group-hover:bg-cyberCyan/10 transition-all duration-300 shadow-glow-cyan mb-6">
+                  {renderIcon(service.icon)}
+                </div>
 
-              {/* Title & description */}
-              <div className="space-y-3">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
+                <h3 className="text-xl font-bold font-display text-white group-hover:text-cyberCyan transition-colors">
                   {service.title}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                
+                <p className="text-sm text-gray-300 mt-3 leading-relaxed">
                   {service.description}
                 </p>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-white/10 flex items-center text-xs font-mono text-emerald-400 gap-2">
+                <FaCheck size={11} /> Enterprise Ready Architecture
               </div>
             </motion.div>
           ))}
 
           {services.length === 0 && (
-            <div className="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
-              No services added yet.
+            <div className="col-span-full py-16 text-center text-gray-400 font-mono">
+              No services listed yet.
             </div>
           )}
         </div>

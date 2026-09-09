@@ -73,9 +73,9 @@ const Home = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-darkBg text-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-          <p className="text-gray-400 text-sm">Loading Abhijeet's Portfolio...</p>
+        <div className="flex flex-col items-center gap-4 p-8 rounded-3xl glass-card">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyberCyan shadow-glow-cyan"></div>
+          <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Initialising Abhijeet's Portfolio...</p>
         </div>
       </div>
     );
@@ -84,12 +84,12 @@ const Home = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-darkBg text-white flex items-center justify-center px-6 text-center">
-        <div className="max-w-md p-6 bg-darkCard rounded-2xl border border-darkBorder shadow-lg">
-          <h2 className="text-xl font-bold text-red-500 mb-4">Under Maintenance</h2>
-          <p className="text-gray-405 text-sm mb-6">{error}</p>
+        <div className="max-w-md p-8 rounded-3xl glass-card border-red-500/30">
+          <h2 className="text-xl font-bold font-display text-red-400 mb-2">Notice</h2>
+          <p className="text-gray-400 text-sm mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg transition-colors font-semibold"
+            className="px-6 py-2.5 bg-gradient-to-r from-primary-600 to-cyberCyan text-white rounded-xl transition-all font-display font-bold text-sm hover:scale-105 shadow-glow-primary cursor-pointer"
           >
             Retry Loading
           </button>
@@ -99,7 +99,7 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-darkBg text-gray-900 dark:text-white transition-colors duration-300">
+    <div className="min-h-screen bg-darkBg text-white">
       <Hero profile={data.profile} />
       <AboutPreview profile={data.profile} />
       <SkillsSection skills={data.skills} />

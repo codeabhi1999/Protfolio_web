@@ -1,49 +1,70 @@
 import React from 'react';
 import * as FaIcons from 'react-icons/fa';
+import { FaArrowUp } from 'react-icons/fa';
 
 const Footer = ({ profile }) => {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { icon: <FaIcons.FaGithub />, url: profile?.socialLinks?.github || '#' },
-    { icon: <FaIcons.FaLinkedin />, url: profile?.socialLinks?.linkedin || '#' },
-    { icon: <FaIcons.FaInstagram />, url: profile?.socialLinks?.instagram || '#' },
-    { icon: <FaIcons.FaEnvelope />, url: `mailto:${profile?.email || 'abhijeetchavan1459@gmail.com'}` },
+    { icon: <FaIcons.FaGithub />, url: profile?.socialLinks?.github || 'https://github.com/abhijeetchavan', label: 'GitHub' },
+    { icon: <FaIcons.FaLinkedin />, url: profile?.socialLinks?.linkedin || 'https://linkedin.com/in/abhijeetchavan', label: 'LinkedIn' },
+    { icon: <FaIcons.FaInstagram />, url: profile?.socialLinks?.instagram || 'https://instagram.com/abhijeetchavan', label: 'Instagram' },
+    { icon: <FaIcons.FaEnvelope />, url: `mailto:${profile?.email || 'chavanabhijeet95@gmail.com'}`, label: 'Email' },
   ];
 
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="bg-white dark:bg-darkBg border-t border-gray-200 dark:border-darkBorder/40 py-12">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-        <div>
-          <h3 className="text-xl font-bold tracking-wider text-gray-800 dark:text-white">
-            Abhijeet<span className="text-primary-500 font-medium">Chavan</span>
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-450 mt-1">
-            {profile?.role || 'Full Stack Developer | .NET & MERN Stack Developer'}
+    <footer className="bg-[#05070a] border-t border-white/10 py-16 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+        
+        {/* Left: Branding & Tagline */}
+        <div className="text-center md:text-left">
+          <div className="flex items-center justify-center md:justify-start gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-600 to-cyberCyan flex items-center justify-center font-black text-xs text-white shadow-glow-primary">
+              AC
+            </div>
+            <h3 className="text-xl font-black font-display tracking-tight text-white">
+              Abhijeet<span className="text-cyberCyan">.dev</span>
+            </h3>
+          </div>
+          <p className="text-xs sm:text-sm text-gray-400 mt-2 max-w-sm">
+            {profile?.role || '.NET & Full-Stack Developer'} · Building resilient enterprise architectures and fluid web interfaces.
           </p>
         </div>
 
-        {/* Social Profile Links */}
-        <div className="flex gap-4">
+        {/* Center: Social Channels */}
+        <div className="flex items-center gap-3">
           {socialLinks.map((social, index) => (
             <a
               key={index}
               href={social.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-500 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 p-2.5 rounded-full bg-gray-155 dark:bg-darkCard hover:bg-gray-200 dark:hover:bg-darkCard/80 transition-all text-lg"
+              aria-label={social.label}
+              className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-primary-500/50 text-gray-400 hover:text-white flex items-center justify-center transition-all hover:scale-105 shadow-sm text-base"
             >
               {social.icon}
             </a>
           ))}
+          <button
+            onClick={handleScrollToTop}
+            className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyberCyan/50 text-gray-400 hover:text-cyberCyan flex items-center justify-center transition-all hover:scale-105 shadow-sm text-sm cursor-pointer ml-2"
+            title="Back to Top"
+          >
+            <FaArrowUp />
+          </button>
         </div>
 
-        <div className="text-center md:text-right">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            &copy; {currentYear} Abhijeet Chavan. All rights reserved.
+        {/* Right: Copyright & Stack Info */}
+        <div className="text-center md:text-right text-xs font-mono text-gray-500">
+          <p className="text-gray-400">
+            &copy; {currentYear} Abhijeet Chavan. Built for Performance.
           </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-            Built with MERN Stack (React, Node, Express, MongoDB) & Tailwind CSS.
+          <p className="mt-1">
+            Engineered with <span className="text-cyberCyan">React</span>, <span className="text-primary-400">.NET Core</span> & <span className="text-emerald-400">Tailwind CSS</span>
           </p>
         </div>
       </div>

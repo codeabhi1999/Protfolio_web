@@ -79,67 +79,94 @@ const Navbar = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className={`max-w-7xl mx-auto flex justify-between items-center transition-all duration-500 pointer-events-auto rounded-2xl px-6 ${
+        className={`max-w-6xl mx-auto flex justify-between items-center transition-all duration-500 pointer-events-auto rounded-full px-5 sm:px-7 ${
           isScrolled
-            ? 'bg-black/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] py-3'
-            : 'bg-transparent py-4 border border-transparent'
+            ? 'bg-darkCard/80 backdrop-blur-2xl border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.7)] py-2.5'
+            : 'bg-darkCard/40 backdrop-blur-md py-3.5 border border-white/5'
         }`}
       >
         {/* Logo */}
         <Link
           to="/"
           onClick={() => isMainPage && window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="text-2xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-indigo-400"
+          className="flex items-center gap-2.5 group"
         >
-          AC<span className="text-white font-medium">.dev</span>
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary-600 via-cyberCyan to-cyberViolet flex items-center justify-center font-black text-xs text-white shadow-glow-primary group-hover:scale-105 transition-transform">
+            AC
+          </div>
+          <span className="font-display font-bold text-base tracking-tight text-white group-hover:text-primary-300 transition-colors">
+            Abhijeet<span className="text-cyberCyan font-mono text-xs ml-1">.dev</span>
+          </span>
+          <span className="hidden sm:inline-flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Active
+          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex items-center gap-8">
-          <ul className="flex items-center gap-6 font-medium">
-            {navLinks.map((link) => (
-              <li key={link.id} className="relative">
-                <button
-                  onClick={() => handleNavClick(link.id)}
-                  className={`text-sm tracking-wide transition-colors duration-250 cursor-pointer px-2 py-1 ${
-                    isMainPage && activeSection === link.id
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                >
-                  {link.name}
-                  {isMainPage && activeSection === link.id && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary-500 rounded-full"
-                      initial={false}
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                </button>
-              </li>
-            ))}
+        <div className="hidden lg:flex items-center gap-6">
+          <ul className="flex items-center gap-1 font-medium bg-black/20 p-1 rounded-full border border-white/5">
+            {navLinks.map((link) => {
+              const isActive = isMainPage && activeSection === link.id;
+              return (
+                <li key={link.id} className="relative">
+                  <button
+                    onClick={() => handleNavClick(link.id)}
+                    className={`text-xs font-semibold tracking-wide transition-all duration-200 cursor-pointer px-3.5 py-1.5 rounded-full relative z-10 ${
+                      isActive
+                        ? 'text-white'
+                        : 'text-gray-400 hover:text-gray-200'
+                    }`}
+                  >
+                    {link.name}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeNavPill"
+                        className="absolute inset-0 bg-gradient-to-r from-primary-600/60 to-cyberCyan/50 rounded-full -z-10 border border-white/20 shadow-sm"
+                        initial={false}
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
 
-          <div className="flex items-center pl-6 border-l border-white/10">
+          <div className="flex items-center gap-3 pl-2">
+            {/* Quick Contact CTA */}
+            <button
+              onClick={() => handleNavClick('contact')}
+              className="px-4 py-1.5 text-xs font-bold rounded-full bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            >
+              Get In Touch
+            </button>
+
             {/* Admin Dashboard Entry */}
             <Link
               to="/admin/dashboard"
-              className="group flex items-center justify-center p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer"
-              title="Admin Panel"
+              className="group flex items-center justify-center p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/15 hover:border-primary-500/40 transition-all cursor-pointer"
+              title="Admin Portal"
             >
-              <FaUserShield size={16} className="text-gray-400 group-hover:text-white transition-colors" />
+              <FaUserShield size={14} className="text-gray-400 group-hover:text-primary-300 transition-colors" />
             </Link>
           </div>
         </div>
 
         {/* Mobile Hamburger */}
-        <div className="flex lg:hidden items-center gap-4">
+        <div className="flex lg:hidden items-center gap-3">
+          <Link
+            to="/admin/dashboard"
+            className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white"
+            title="Admin Portal"
+          >
+            <FaUserShield size={14} />
+          </Link>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-gray-300 hover:text-white p-2 cursor-pointer bg-white/5 border border-white/10 rounded-lg transition-colors hover:bg-white/10"
+            className="text-gray-300 hover:text-white p-2 cursor-pointer bg-white/5 border border-white/10 rounded-full transition-colors hover:bg-white/10"
           >
-            {isOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
+            {isOpen ? <FaTimes size={16} /> : <FaBars size={16} />}
           </button>
         </div>
       </motion.div>

@@ -2,7 +2,18 @@ import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../components/AdminSidebar';
 import API from '../services/api';
 import toast from 'react-hot-toast';
-import { FaTrash, FaEdit, FaPlus, FaTimes } from 'react-icons/fa';
+import { 
+  FaTrash, 
+  FaEdit, 
+  FaPlus, 
+  FaTimes, 
+  FaBriefcase, 
+  FaGraduationCap, 
+  FaCalendarAlt, 
+  FaMapMarkerAlt,
+  FaCheckCircle
+} from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ManageTimeline = () => {
   const [activeTab, setActiveTab] = useState('experience');
@@ -41,8 +52,8 @@ const ManageTimeline = () => {
       ]);
       setExperiences(expRes.data?.data || []);
       setEducations(eduRes.data?.data || []);
-    } catch (error) {
-      toast.error('Failed to load timeline statistics');
+    } catch {
+      toast.error('Failed to load timeline records');
     } finally {
       setLoading(false);
     }
@@ -85,8 +96,8 @@ const ManageTimeline = () => {
         startDate: item.startDate,
         endDate: item.endDate,
         location: item.location || '',
-        responsibilities: item.responsibilities?.join('\n') || '',
-        technologies: item.technologies?.join(', ') || '',
+        responsibilities: (item.responsibilities || []).join('\n'),
+        technologies: (item.technologies || []).join(', '),
       });
     } else {
       setEduFormData({
@@ -113,7 +124,7 @@ const ManageTimeline = () => {
 
         const payload = {
           ...expFormData,
-          responsibilities: expFormData.responsibilities.split('\n').filter(Boolean),
+          responsibilities: expFormData.responsibilities.split('\n').map(r => r.trim()).filter(Boolean),
           technologies: expFormData.technologies.split(',').map(t => t.trim()).filter(Boolean),
         };
 
@@ -131,7 +142,6 @@ const ManageTimeline = () => {
           }
         }
       } else {
-        // Education Submission
         const { degree, institution, startYear, endYear } = eduFormData;
         if (!degree.trim() || !institution.trim() || !startYear.trim() || !endYear.trim()) {
           toast.error('Please enter all required fields');
@@ -159,7 +169,7 @@ const ManageTimeline = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this record?')) return;
+    if (!window.confirm('Delete this record permanently?')) return;
     try {
       const route = activeTab === 'experience' ? `/experience/${id}` : `/education/${id}`;
       const response = await API.delete(route);
@@ -171,350 +181,424 @@ const ManageTimeline = () => {
           setEducations(educations.filter(e => e._id !== id));
         }
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete record');
     }
   };
 
   return (
-    <div className="flex bg-slate-950 text-white min-h-screen">
+    <div className="flex bg-darkBg text-white min-h-screen">
       <AdminSidebar />
 
-      <main className="flex-grow p-8 overflow-y-auto">
-        <header className="mb-8 flex justify-between items-center">
+      <main className="flex-grow p-6 sm:p-10 overflow-y-auto max-w-[1600px]">
+        
+        {/* Header Ribbon */}
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-white/10">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Timeline History</h1>
-            <p className="text-sm text-slate-400 mt-1">Configure your employment history and graduation achievements.</p>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyberEmerald/10 border border-cyberEmerald/20 text-xs font-mono font-semibold text-cyberEmerald uppercase tracking-widest mb-2">
+              Chronicle Studio
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight text-white">
+              Career & Education Timeline
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-400 mt-1 font-mono">
+              Manage chronological employment history, degrees, and academic milestones.
+            </p>
           </div>
+
           <button
             onClick={handleOpenCreate}
-            className="px-4 py-2.5 bg-primary-650 hover:bg-primary-550 rounded-lg text-sm font-bold flex items-center gap-2 shadow-md cursor-pointer"
+            className="px-5 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
           >
-            <FaPlus /> Add Record
+            <FaPlus size={12} />
+            <span>Add {activeTab === 'experience' ? 'Experience' : 'Education'}</span>
           </button>
         </header>
 
         {/* Tab Selection */}
-        <div className="flex border-b border-slate-800 mb-6 gap-6 text-sm">
+        <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 mb-8 w-fit">
           <button
             onClick={() => setActiveTab('experience')}
-            className={`pb-4 font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'experience' ? 'border-primary-500 text-primary-400' : 'border-transparent text-slate-400'
+            className={`px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'experience'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
-            Work Experience ({experiences.length})
+            <FaBriefcase size={12} />
+            <span>Work Experience ({experiences.length})</span>
           </button>
+
           <button
             onClick={() => setActiveTab('education')}
-            className={`pb-4 font-bold border-b-2 transition-all cursor-pointer ${
-              activeTab === 'education' ? 'border-primary-500 text-primary-400' : 'border-transparent text-slate-400'
+            className={`px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'education'
+                ? 'bg-primary-600 text-white shadow-sm'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
-            Education History ({educations.length})
+            <FaGraduationCap size={13} />
+            <span>Education ({educations.length})</span>
           </button>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
+          <div className="flex justify-center items-center py-24">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyberCyan shadow-glow-cyan"></div>
           </div>
         ) : (
-          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg">
+          <div className="space-y-4">
             {activeTab === 'experience' ? (
-              /* Experience Table */
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-950 text-slate-450 uppercase text-[10px] font-bold tracking-wider border-b border-slate-850">
-                    <tr>
-                      <th className="p-4">Position</th>
-                      <th className="p-4">Company</th>
-                      <th className="p-4">Period</th>
-                      <th className="p-4">Location</th>
-                      <th className="p-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-850">
-                    {experiences.map((exp) => (
-                      <tr key={exp._id} className="hover:bg-slate-855 hover:bg-slate-850/40 transition-colors">
-                        <td className="p-4 font-semibold">{exp.position}</td>
-                        <td className="p-4 text-slate-300">{exp.company}</td>
-                        <td className="p-4 text-slate-400 font-mono text-xs">{exp.startDate} - {exp.endDate}</td>
-                        <td className="p-4 text-slate-450">{exp.location}</td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-3">
-                            <button
-                              onClick={() => handleOpenEdit(exp)}
-                              className="text-slate-450 hover:text-white p-2 hover:bg-slate-800 rounded transition-colors cursor-pointer"
-                            >
-                              <FaEdit size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(exp._id)}
-                              className="text-slate-450 hover:text-red-400 p-2 hover:bg-slate-800 rounded transition-colors cursor-pointer"
-                            >
-                              <FaTrash size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {experiences.length === 0 && (
-                      <tr>
-                        <td colSpan="5" className="p-8 text-center text-slate-500">
-                          No experiences configured.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              // Experience List
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {experiences.map((exp) => (
+                  <div
+                    key={exp._id}
+                    className="p-6 rounded-3xl glass-card flex flex-col justify-between group hover:border-primary-500/50 relative overflow-hidden"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="text-xs font-mono font-bold text-cyberCyan flex items-center gap-1.5 bg-cyberCyan/10 px-3 py-0.5 rounded-full">
+                          <FaCalendarAlt size={10} /> {exp.startDate} – {exp.endDate}
+                        </span>
+                        {exp.location && (
+                          <span className="text-[11px] font-mono text-gray-400 flex items-center gap-1">
+                            <FaMapMarkerAlt size={10} /> {exp.location}
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-lg font-bold font-display text-white group-hover:text-cyberCyan transition-colors mt-2">
+                        {exp.position}
+                      </h3>
+                      <p className="text-xs font-semibold text-gray-300 font-mono mt-0.5">
+                        {exp.company}
+                      </p>
+
+                      {exp.responsibilities && exp.responsibilities.length > 0 && (
+                        <ul className="mt-4 space-y-1.5 pt-3 border-t border-white/5">
+                          {exp.responsibilities.slice(0, 3).map((r, rIdx) => (
+                            <li key={rIdx} className="text-xs text-gray-400 flex items-start gap-2">
+                              <FaCheckCircle className="text-emerald-400 mt-1 shrink-0 text-[10px]" />
+                              <span className="line-clamp-2">{r}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-between">
+                      <div className="flex flex-wrap gap-1">
+                        {(exp.technologies || []).slice(0, 3).map((t, tIdx) => (
+                          <span key={tIdx} className="text-[10px] font-mono bg-white/5 text-gray-400 px-2 py-0.5 rounded">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(exp)}
+                          className="p-2 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                          title="Edit"
+                        >
+                          <FaEdit size={12} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(exp._id)}
+                          className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors cursor-pointer"
+                          title="Delete"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {experiences.length === 0 && (
+                  <div className="col-span-full py-16 text-center text-gray-400 font-mono rounded-3xl glass-card">
+                    No work experience added. Click 'Add Experience' above.
+                  </div>
+                )}
               </div>
             ) : (
-              /* Education Table */
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-950 text-slate-450 uppercase text-[10px] font-bold tracking-wider border-b border-slate-850">
-                    <tr>
-                      <th className="p-4">Degree</th>
-                      <th className="p-4">Institution</th>
-                      <th className="p-4">Period</th>
-                      <th className="p-4 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-850">
-                    {educations.map((edu) => (
-                      <tr key={edu._id} className="hover:bg-slate-850/40 transition-colors">
-                        <td className="p-4 font-semibold">{edu.degree}</td>
-                        <td className="p-4 text-slate-300">{edu.institution}</td>
-                        <td className="p-4 text-slate-400 font-mono text-xs">{edu.startYear} - {edu.endYear}</td>
-                        <td className="p-4 text-right">
-                          <div className="flex items-center justify-end gap-3">
-                            <button
-                              onClick={() => handleOpenEdit(edu)}
-                              className="text-slate-450 hover:text-white p-2 hover:bg-slate-800 rounded transition-colors cursor-pointer"
-                            >
-                              <FaEdit size={14} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(edu._id)}
-                              className="text-slate-455 hover:text-red-400 p-2 hover:bg-slate-800 rounded transition-colors cursor-pointer"
-                            >
-                              <FaTrash size={14} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {educations.length === 0 && (
-                      <tr>
-                        <td colSpan="4" className="p-8 text-center text-slate-500">
-                          No education history configured.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              // Education List
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {educations.map((edu) => (
+                  <div
+                    key={edu._id}
+                    className="p-6 rounded-3xl glass-card flex flex-col justify-between group hover:border-cyberViolet/50 relative overflow-hidden"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="text-xs font-mono font-bold text-cyberViolet flex items-center gap-1.5 bg-cyberViolet/10 px-3 py-0.5 rounded-full">
+                          <FaCalendarAlt size={10} /> {edu.startYear} – {edu.endYear}
+                        </span>
+                      </div>
+
+                      <h3 className="text-lg font-bold font-display text-white group-hover:text-cyberViolet transition-colors mt-2">
+                        {edu.degree}
+                      </h3>
+                      <p className="text-xs font-semibold text-gray-300 font-mono mt-0.5">
+                        {edu.institution}
+                      </p>
+
+                      {edu.description && (
+                        <p className="mt-3 p-3 rounded-xl bg-white/5 text-xs text-gray-300 font-mono">
+                          {edu.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="mt-5 pt-3 border-t border-white/10 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleOpenEdit(edu)}
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/15 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                        title="Edit"
+                      >
+                        <FaEdit size={12} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(edu._id)}
+                        className="p-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded transition-colors cursor-pointer"
+                        title="Delete"
+                      >
+                        <FaTrash size={12} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {educations.length === 0 && (
+                  <div className="col-span-full py-16 text-center text-gray-400 font-mono rounded-3xl glass-card">
+                    No education records added. Click 'Add Education' above.
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {/* Create/Edit Modal Dialog */}
-        {showModal && (
-          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-              <div className="p-6 border-b border-slate-800 flex justify-between items-center shrink-0">
-                <h3 className="text-lg font-bold">
-                  {editingId ? 'Edit Timeline Record' : 'Add New Timeline Record'}
-                </h3>
-                <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
-                  <FaTimes />
-                </button>
-              </div>
+        {/* Modal Dialog */}
+        <AnimatePresence>
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="w-full max-w-xl rounded-3xl glass-card p-6 sm:p-8 relative overflow-hidden shadow-2xl border border-white/20 my-8"
+              >
+                <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6">
+                  <h3 className="text-xl font-bold font-display text-white">
+                    {editingId ? 'Modify Record' : `Add ${activeTab === 'experience' ? 'Experience' : 'Education'}`}
+                  </h3>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="p-2 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <FaTimes size={16} />
+                  </button>
+                </div>
 
-              {activeTab === 'experience' ? (
-                /* Experience Form */
-                <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-grow text-sm">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Position Title *</label>
-                      <input
-                        type="text"
-                        required
-                        value={expFormData.position}
-                        onChange={(e) => setExpFormData({ ...expFormData, position: e.target.value })}
-                        placeholder="e.g. Jr. .NET Developer"
-                        className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Company Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={expFormData.company}
-                        onChange={(e) => setExpFormData({ ...expFormData, company: e.target.value })}
-                        placeholder="e.g. IT Solutions Pvt Ltd"
-                        className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                  </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {activeTab === 'experience' ? (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                            Job Position *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={expFormData.position}
+                            onChange={(e) => setExpFormData({ ...expFormData, position: e.target.value })}
+                            placeholder="e.g. Dot Net Developer"
+                            className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                          />
+                        </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Start Period (e.g. Jul 2024) *</label>
-                      <input
-                        type="text"
-                        required
-                        value={expFormData.startDate}
-                        onChange={(e) => setExpFormData({ ...expFormData, startDate: e.target.value })}
-                        placeholder="Jul 2024"
-                        className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">End Period (e.g. Present)</label>
-                      <input
-                        type="text"
-                        value={expFormData.endDate}
-                        onChange={(e) => setExpFormData({ ...expFormData, endDate: e.target.value })}
-                        placeholder="Present"
-                        className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                  </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                            Company Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={expFormData.company}
+                            onChange={(e) => setExpFormData({ ...expFormData, company: e.target.value })}
+                            placeholder="e.g. Global IT Services"
+                            className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                          />
+                        </div>
+                      </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Location</label>
-                    <input
-                      type="text"
-                      value={expFormData.location}
-                      onChange={(e) => setExpFormData({ ...expFormData, location: e.target.value })}
-                      placeholder="Nagpur, Maharashtra, India"
-                      className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                            Start Date *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={expFormData.startDate}
+                            onChange={(e) => setExpFormData({ ...expFormData, startDate: e.target.value })}
+                            placeholder="09/2023"
+                            className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                          />
+                        </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Responsibilities (one bullet per line)</label>
-                    <textarea
-                      rows={5}
-                      value={expFormData.responsibilities}
-                      onChange={(e) => setExpFormData({ ...expFormData, responsibilities: e.target.value })}
-                      placeholder="Developed database layers using Entity Framework Core&#10;Created dashboard APIs using Express..."
-                      className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    ></textarea>
-                  </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                            End Date
+                          </label>
+                          <input
+                            type="text"
+                            value={expFormData.endDate}
+                            onChange={(e) => setExpFormData({ ...expFormData, endDate: e.target.value })}
+                            placeholder="Present"
+                            className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                          />
+                        </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Technologies Used (comma separated)</label>
-                    <input
-                      type="text"
-                      value={expFormData.technologies}
-                      onChange={(e) => setExpFormData({ ...expFormData, technologies: e.target.value })}
-                      placeholder="C#, ASP.NET Core, SQL Server, React"
-                      className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                            Location
+                          </label>
+                          <input
+                            type="text"
+                            value={expFormData.location}
+                            onChange={(e) => setExpFormData({ ...expFormData, location: e.target.value })}
+                            placeholder="Nagpur, INDIA"
+                            className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                          />
+                        </div>
+                      </div>
 
-                  <div className="pt-4 flex gap-3 shrink-0">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                          Key Responsibilities (one per line)
+                        </label>
+                        <textarea
+                          rows={4}
+                          value={expFormData.responsibilities}
+                          onChange={(e) => setExpFormData({ ...expFormData, responsibilities: e.target.value })}
+                          placeholder="Developed ICU management module&#10;Integrated SQL Server stored procedures"
+                          className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-sans"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                          Technologies (comma-separated)
+                        </label>
+                        <input
+                          type="text"
+                          value={expFormData.technologies}
+                          onChange={(e) => setExpFormData({ ...expFormData, technologies: e.target.value })}
+                          placeholder="C#, ASP.NET Core, SQL Server, JavaScript"
+                          className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                          Degree / Credential *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={eduFormData.degree}
+                          onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })}
+                          placeholder="e.g. Master of Computer Applications"
+                          className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                          Institution / University *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={eduFormData.institution}
+                          onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
+                          placeholder="e.g. Prof. Ram Meghe Institute of Technology"
+                          className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                            Start Year *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={eduFormData.startYear}
+                            onChange={(e) => setEduFormData({ ...eduFormData, startYear: e.target.value })}
+                            placeholder="2020"
+                            className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                          />
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                            End Year *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={eduFormData.endYear}
+                            onChange={(e) => setEduFormData({ ...eduFormData, endYear: e.target.value })}
+                            placeholder="2022"
+                            className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+                          Distinction & Description
+                        </label>
+                        <input
+                          type="text"
+                          value={eduFormData.description}
+                          onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
+                          placeholder="e.g. 9.0 CGPA Distinction · Location: Amravati, India"
+                          className="px-4 py-2.5 rounded-xl bg-darkBg border border-white/10 focus:border-cyberCyan outline-none text-xs sm:text-sm text-white font-mono"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  <div className="pt-4 flex gap-3">
                     <button
                       type="button"
                       onClick={() => setShowModal(false)}
-                      className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-350 font-bold rounded-lg transition-colors cursor-pointer"
+                      className="flex-1 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 font-mono text-xs font-bold transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-3 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-lg transition-colors cursor-pointer"
+                      className="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-cyberCyan text-white font-mono text-xs font-bold shadow-glow-primary hover:opacity-95 transition-all cursor-pointer"
                     >
-                      {editingId ? 'Save Changes' : 'Add Experience'}
+                      {editingId ? 'Save Timeline Changes' : 'Add Record'}
                     </button>
                   </div>
                 </form>
-              ) : (
-                /* Education Form */
-                <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 flex-grow text-sm">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-455 uppercase tracking-wider">Degree / Qualification *</label>
-                    <input
-                      type="text"
-                      required
-                      value={eduFormData.degree}
-                      onChange={(e) => setEduFormData({ ...eduFormData, degree: e.target.value })}
-                      placeholder="e.g. Master of Computer Applications (MCA)"
-                      className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Institution / University *</label>
-                    <input
-                      type="text"
-                      required
-                      value={eduFormData.institution}
-                      onChange={(e) => setEduFormData({ ...eduFormData, institution: e.target.value })}
-                      placeholder="e.g. Nagpur University Campus"
-                      className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-550"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-455 uppercase tracking-wider">Start Year *</label>
-                      <input
-                        type="text"
-                        required
-                        value={eduFormData.startYear}
-                        onChange={(e) => setEduFormData({ ...eduFormData, startYear: e.target.value })}
-                        placeholder="2022"
-                        className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">End/Graduation Year *</label>
-                      <input
-                        type="text"
-                        required
-                        value={eduFormData.endYear}
-                        onChange={(e) => setEduFormData({ ...eduFormData, endYear: e.target.value })}
-                        placeholder="2024"
-                        className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-slate-450 uppercase tracking-wider">Description</label>
-                    <textarea
-                      rows={4}
-                      value={eduFormData.description}
-                      onChange={(e) => setEduFormData({ ...eduFormData, description: e.target.value })}
-                      placeholder="Additional course highlights or curriculum details..."
-                      className="w-full px-4 py-2.5 rounded-lg border border-slate-800 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    ></textarea>
-                  </div>
-
-                  <div className="pt-4 flex gap-3 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setShowModal(false)}
-                      className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-350 font-bold rounded-lg transition-colors cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-1 py-3 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-lg transition-colors cursor-pointer"
-                    >
-                      {editingId ? 'Save Changes' : 'Add Education'}
-                    </button>
-                  </div>
-                </form>
-              )}
+              </motion.div>
             </div>
-          </div>
-        )}
+          )}
+        </AnimatePresence>
+
       </main>
     </div>
   );

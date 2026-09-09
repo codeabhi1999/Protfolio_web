@@ -41,14 +41,14 @@ const BaseLayout = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a0a] text-white relative overflow-hidden font-sans">
-      {/* Global Premium Animated Background Elements */}
-      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none mix-blend-screen z-0" />
-      <div className="fixed top-[20%] right-[20%] w-[20%] h-[20%] rounded-full bg-purple-600/10 blur-[100px] pointer-events-none mix-blend-screen z-0" />
+    <div className="flex flex-col min-h-screen bg-darkBg text-white relative overflow-hidden font-sans selection:bg-primary-500/30">
+      {/* Global Ambient Glow Orbs */}
+      <div className="fixed top-[-15%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-600/15 blur-[140px] pointer-events-none mix-blend-screen z-0 animate-pulse-glow" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-cyberCyan/12 blur-[140px] pointer-events-none mix-blend-screen z-0 animate-pulse-glow" />
+      <div className="fixed top-[35%] right-[15%] w-[30vw] h-[30vw] rounded-full bg-cyberViolet/10 blur-[120px] pointer-events-none mix-blend-screen z-0" />
 
-      {/* Global Grid Pattern Overlay */}
-      <div className="fixed inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-50 pointer-events-none z-0" />
+      {/* Cyber Grid Pattern with Radial Vignette */}
+      <div className="fixed inset-0 cyber-grid radial-mask pointer-events-none z-0" />
 
       <Navbar />
       <div className="flex-grow z-10 relative">
