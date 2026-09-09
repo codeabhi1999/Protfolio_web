@@ -95,32 +95,27 @@ try {
 // Serve file uploads statically
 app.use('/uploads', express.static(publicUploadsDir));
 
-// Rate Limiting Config
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per window
-  message: {
-    success: false,
-    message: 'Too many requests from this IP. Please try again after 15 minutes.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Rate Limiting Config (enabled only locally; Vercel platform manages edge rate limits)
+if (!process.env.VERCEL) {
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: false,
+  });
 
-const contactLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // Limit each IP to 5 contact forms submissions per hour
-  message: {
-    success: false,
-    message: 'Too many contact messages sent from this IP. Please try again after an hour.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+  const contactLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: false,
+  });
 
-// Apply rate limits
-app.use('/api', apiLimiter);
-app.use('/api/contact', contactLimiter);
+  app.use('/api', apiLimiter);
+  app.use('/api/contact', contactLimiter);
+}
 
 // Mount API Routes (Both /api/* and /* supported for Vercel rewrite compatibility)
 const registerRoutes = (prefix = '') => {

@@ -8,10 +8,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
+const fallbackDatabaseUrl = 'postgresql://postgres.sfmmdbrmzqioheheirgv:Abhijeet%40190@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres';
+
 export const getConnectionString = () => {
-  let connStr = process.env.DATABASE_URL;
+  let connStr = process.env.DATABASE_URL || fallbackDatabaseUrl;
   if (!connStr || connStr.includes('[YOUR-PASSWORD]')) {
-    return null;
+    connStr = fallbackDatabaseUrl;
   }
   // In serverless environments (Vercel) or when connecting to Supabase pooler, use port 6543 (transaction mode)
   if (connStr.includes('.pooler.supabase.com:5432')) {
