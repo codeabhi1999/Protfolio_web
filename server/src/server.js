@@ -121,23 +121,37 @@ const contactLimiter = rateLimit({
 app.use('/api', apiLimiter);
 app.use('/api/contact', contactLimiter);
 
-// Mount API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/skills', skillRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/experience', experienceRoutes);
-app.use('/api/education', educationRoutes);
-app.use('/api/certifications', certificationRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/upload', uploadRoutes);
+// Mount API Routes (Both /api/* and /* supported for Vercel rewrite compatibility)
+const registerRoutes = (prefix = '') => {
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/profile`, profileRoutes);
+  app.use(`${prefix}/skills`, skillRoutes);
+  app.use(`${prefix}/projects`, projectRoutes);
+  app.use(`${prefix}/experience`, experienceRoutes);
+  app.use(`${prefix}/education`, educationRoutes);
+  app.use(`${prefix}/certifications`, certificationRoutes);
+  app.use(`${prefix}/services`, serviceRoutes);
+  app.use(`${prefix}/contact`, contactRoutes);
+  app.use(`${prefix}/upload`, uploadRoutes);
+};
 
-// Base Route
-app.get('/', (req, res) => {
+registerRoutes('/api');
+registerRoutes('');
+
+// Base Health Check
+app.get(['/', '/api'], (req, res) => {
   res.json({
     success: true,
     message: 'Welcome to Abhijeet Chavan Portfolio API Server',
+    time: new Date().toISOString(),
+  });
+});
+
+// 404 JSON Catch-All
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API Route Not Found: [${req.method}] ${req.originalUrl || req.url}`,
   });
 });
 
