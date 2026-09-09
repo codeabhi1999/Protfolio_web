@@ -20,7 +20,7 @@ export const authenticateAdmin = async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'development_jwt_secret_key_abhijeet');
 
     if (decoded.id === 'mock_user_id_123') {
       req.user = { _id: 'mock_user_id_123', id: 'mock_user_id_123', email: 'abhijeet.chavan.dev@gmail.com' };

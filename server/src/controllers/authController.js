@@ -4,7 +4,7 @@ import { dbFetchOne } from '../config/dbHelper.js';
 import { isSupabaseConfigured } from '../config/supabase.js';
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'development_jwt_secret_key_abhijeet', {
     expiresIn: process.env.JWT_EXPIRE || '30d',
   });
 };

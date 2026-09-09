@@ -1,8 +1,20 @@
 import axios from 'axios';
 
+// Resolve Base URL dynamically: in production (Vercel), always default to relative '/api'
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (import.meta.env.PROD) {
+    if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+      return '/api';
+    }
+    return envUrl;
+  }
+  return envUrl || 'http://localhost:5001/api';
+};
+
 // Configure Axios Instance
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5001/api'),
+  baseURL: getBaseURL(),
   withCredentials: true, // Crucial for cookie passing
   timeout: 15000, // 15s to allow serverless cold starts
 });
