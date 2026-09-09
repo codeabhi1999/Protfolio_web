@@ -20,11 +20,13 @@ export const loginAdmin = async (req, res, next) => {
 
     let authenticatedUserId = null;
     let authenticatedEmail = null;
+    let userFoundInDb = false;
 
     if (isSupabaseConfigured()) {
       try {
         const adminUser = await dbFetchOne('admin_users', { email: email.trim().toLowerCase() });
         if (adminUser) {
+          userFoundInDb = true;
           const isMatch = await bcrypt.compare(password, adminUser.password);
           if (isMatch) {
             authenticatedUserId = adminUser.id;
@@ -36,8 +38,8 @@ export const loginAdmin = async (req, res, next) => {
       }
     }
 
-    // Demo Credentials Fallback
-    if (!authenticatedUserId) {
+    // Demo Credentials Fallback (strictly for offline/demo development without Supabase)
+    if (!authenticatedUserId && !userFoundInDb) {
       const demoEmail = process.env.ADMIN_EMAIL || 'abhijeet.chavan.dev@gmail.com';
       const demoPassword = process.env.ADMIN_PASSWORD || 'admin12345';
 
