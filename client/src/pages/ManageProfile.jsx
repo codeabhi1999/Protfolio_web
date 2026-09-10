@@ -150,18 +150,18 @@ const ManageProfile = () => {
   };
 
   return (
-    <div className="flex bg-darkBg text-white min-h-screen">
+    <div className="flex flex-col md:flex-row bg-darkBg text-white min-h-screen">
       <AdminSidebar />
 
-      <main className="flex-grow p-6 sm:p-10 overflow-y-auto max-w-[1600px]">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-10 overflow-y-auto max-w-[1600px]">
         
         {/* Header Ribbon */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-white/10">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-white/10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 text-xs font-mono font-semibold text-primary-300 uppercase tracking-widest mb-2">
               Identity Management
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display tracking-tight text-white">
               Profile & Career Bio
             </h1>
             <p className="text-xs sm:text-sm text-gray-400 mt-1 font-mono">
@@ -172,7 +172,7 @@ const ManageProfile = () => {
           <button
             onClick={handleSubmit}
             disabled={saving || loading}
-            className="px-6 py-3 rounded-xl font-display font-bold text-sm bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto justify-center px-6 py-3 rounded-xl font-display font-bold text-sm bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-95 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <FaSave size={14} />
             <span>{saving ? 'Saving Changes...' : 'Save Profile Changes'}</span>
@@ -184,17 +184,17 @@ const ManageProfile = () => {
             <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-cyberCyan shadow-glow-cyan"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 sm:gap-8 items-start">
             
             {/* Form Column (8 cols) */}
-            <div className="xl:col-span-8 rounded-3xl glass-card p-6 sm:p-8 border border-white/10">
+            <div className="xl:col-span-8 rounded-2xl sm:rounded-3xl glass-card p-5 sm:p-8 border border-white/10">
               
               {/* Tab Navigation */}
-              <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 mb-8 w-fit">
+              <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 mb-6 sm:mb-8 w-full sm:w-fit overflow-x-auto scrollbar-none gap-1">
                 <button
                   type="button"
                   onClick={() => setActiveTab('identity')}
-                  className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                  className={`shrink-0 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                     activeTab === 'identity'
                       ? 'bg-primary-600 text-white shadow-sm'
                       : 'text-gray-400 hover:text-white'
@@ -205,7 +205,7 @@ const ManageProfile = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('bio')}
-                  className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                  className={`shrink-0 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                     activeTab === 'bio'
                       ? 'bg-primary-600 text-white shadow-sm'
                       : 'text-gray-400 hover:text-white'
@@ -216,7 +216,7 @@ const ManageProfile = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('socials')}
-                  className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
+                  className={`shrink-0 px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all ${
                     activeTab === 'socials'
                       ? 'bg-primary-600 text-white shadow-sm'
                       : 'text-gray-400 hover:text-white'
@@ -226,7 +226,7 @@ const ManageProfile = () => {
                 </button>
                 <Link
                   to="/admin/security"
-                  className="px-4 py-2 rounded-xl text-xs font-mono font-bold text-cyberCyan hover:bg-cyberCyan/10 border border-cyberCyan/30 transition-all flex items-center gap-1.5 ml-2"
+                  className="shrink-0 px-4 py-2 rounded-xl text-xs font-mono font-bold text-cyberCyan hover:bg-cyberCyan/10 border border-cyberCyan/30 transition-all flex items-center gap-1.5 ml-1"
                 >
                   <FaShieldAlt size={11} />
                   <span>Login & Security</span>
@@ -443,7 +443,7 @@ const ManageProfile = () => {
             </div>
 
             {/* Live Preview Side Card (4 cols) */}
-            <div className="xl:col-span-4 rounded-3xl glass-card p-6 sm:p-8 border border-white/10 sticky top-10 space-y-6">
+            <div className="xl:col-span-4 rounded-2xl sm:rounded-3xl glass-card p-5 sm:p-8 border border-white/10 xl:sticky xl:top-10 space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <span className="text-xs font-mono font-bold uppercase text-cyberCyan flex items-center gap-2">
                   <FaEye /> Live Public Preview

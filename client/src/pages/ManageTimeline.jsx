@@ -187,18 +187,18 @@ const ManageTimeline = () => {
   };
 
   return (
-    <div className="flex bg-darkBg text-white min-h-screen">
+    <div className="flex flex-col md:flex-row bg-darkBg text-white min-h-screen">
       <AdminSidebar />
 
-      <main className="flex-grow p-6 sm:p-10 overflow-y-auto max-w-[1600px]">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-10 overflow-y-auto max-w-[1600px]">
         
         {/* Header Ribbon */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-white/10">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-white/10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyberEmerald/10 border border-cyberEmerald/20 text-xs font-mono font-semibold text-cyberEmerald uppercase tracking-widest mb-2">
               Chronicle Studio
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display tracking-tight text-white">
               Career & Education Timeline
             </h1>
             <p className="text-xs sm:text-sm text-gray-400 mt-1 font-mono">
@@ -208,7 +208,7 @@ const ManageTimeline = () => {
 
           <button
             onClick={handleOpenCreate}
-            className="px-5 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
+            className="w-full sm:w-auto justify-center px-5 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
           >
             <FaPlus size={12} />
             <span>Add {activeTab === 'experience' ? 'Experience' : 'Education'}</span>
@@ -216,10 +216,10 @@ const ManageTimeline = () => {
         </header>
 
         {/* Tab Selection */}
-        <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 mb-8 w-fit">
+        <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5 mb-6 sm:mb-8 w-full sm:w-fit overflow-x-auto scrollbar-none gap-1">
           <button
             onClick={() => setActiveTab('experience')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`shrink-0 px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'experience'
                 ? 'bg-primary-600 text-white shadow-sm'
                 : 'text-gray-400 hover:text-white'
@@ -231,7 +231,7 @@ const ManageTimeline = () => {
 
           <button
             onClick={() => setActiveTab('education')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            className={`shrink-0 px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'education'
                 ? 'bg-primary-600 text-white shadow-sm'
                 : 'text-gray-400 hover:text-white'
@@ -383,12 +383,12 @@ const ManageTimeline = () => {
         {/* Modal Dialog */}
         <AnimatePresence>
           {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-xl rounded-3xl glass-card p-6 sm:p-8 relative overflow-hidden shadow-2xl border border-white/20 my-8"
+                className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl glass-card p-5 sm:p-8 relative shadow-2xl border border-white/20 my-auto"
               >
                 <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6">
                   <h3 className="text-xl font-bold font-display text-white">

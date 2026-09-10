@@ -46,7 +46,7 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-darkBg text-white flex flex-col justify-center items-center px-6 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-darkBg text-white flex flex-col justify-center items-center px-4 sm:px-6 py-10 sm:py-0 relative overflow-hidden font-sans">
       
       {/* Ambient Glowing Orbs */}
       <div className="fixed top-[-15%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-600/15 blur-[140px] pointer-events-none mix-blend-screen animate-pulse-glow" />
@@ -59,7 +59,7 @@ const AdminLogin = () => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
         onClick={() => navigate('/')}
-        className="absolute top-8 left-8 sm:top-12 sm:left-12 text-gray-400 hover:text-white transition-all flex items-center gap-2 text-xs font-mono font-bold tracking-wide z-20 group cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full"
+        className="sm:absolute sm:top-10 sm:left-10 mb-6 sm:mb-0 self-start sm:self-auto text-gray-400 hover:text-white transition-all flex items-center gap-2 text-xs font-mono font-bold tracking-wide z-20 group cursor-pointer bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-full"
       >
         <FaArrowLeft className="text-xs group-hover:-translate-x-1 transition-transform text-cyberCyan" />
         Back to Website
@@ -72,7 +72,7 @@ const AdminLogin = () => {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         className="w-full max-w-[440px] z-10"
       >
-        <div className="glass-card rounded-3xl p-8 sm:p-10 relative overflow-hidden group shadow-2xl border border-white/10">
+        <div className="glass-card rounded-2xl sm:rounded-3xl p-6 sm:p-10 relative overflow-hidden group shadow-2xl border border-white/10">
           
           <div className="text-center mb-8">
             <motion.div 

@@ -187,18 +187,18 @@ const ManageProjects = () => {
   };
 
   return (
-    <div className="flex bg-darkBg text-white min-h-screen">
+    <div className="flex flex-col md:flex-row bg-darkBg text-white min-h-screen">
       <AdminSidebar />
 
-      <main className="flex-grow p-6 sm:p-10 overflow-y-auto max-w-[1600px]">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-10 overflow-y-auto max-w-[1600px]">
         
         {/* Header Ribbon */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-white/10">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-white/10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 text-xs font-mono font-semibold text-primary-300 uppercase tracking-widest mb-2">
               Production Studio
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display tracking-tight text-white">
               Projects Studio Manager
             </h1>
             <p className="text-xs sm:text-sm text-gray-400 mt-1 font-mono">
@@ -208,7 +208,7 @@ const ManageProjects = () => {
 
           <button
             onClick={handleOpenCreate}
-            className="px-5 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
+            className="w-full sm:w-auto justify-center px-5 py-3 rounded-xl font-display font-bold text-xs sm:text-sm bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
           >
             <FaPlus size={12} />
             <span>Create New Project</span>
@@ -216,7 +216,7 @@ const ManageProjects = () => {
         </header>
 
         {/* Search Bar */}
-        <div className="mb-8 flex justify-end">
+        <div className="mb-6 sm:mb-8 flex justify-end w-full">
           <div className="relative w-full sm:w-80">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
               <FaSearch size={12} />
@@ -344,12 +344,12 @@ const ManageProjects = () => {
         {/* Create/Edit Modal */}
         <AnimatePresence>
           {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-2xl rounded-3xl glass-card p-6 sm:p-8 relative overflow-hidden shadow-2xl border border-white/20 my-8"
+                className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl glass-card p-5 sm:p-8 relative shadow-2xl border border-white/20 my-auto"
               >
                 <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6">
                   <h3 className="text-xl font-bold font-display text-white">

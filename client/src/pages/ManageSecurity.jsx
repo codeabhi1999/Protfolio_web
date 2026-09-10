@@ -112,20 +112,20 @@ const ManageSecurity = () => {
   };
 
   return (
-    <div className="flex bg-[#040711] min-h-screen text-gray-200">
+    <div className="flex flex-col md:flex-row bg-[#040711] min-h-screen text-gray-200">
       <AdminSidebar />
 
-      <main className="flex-1 p-6 sm:p-10 max-w-7xl overflow-x-hidden relative">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-10 max-w-7xl overflow-x-hidden relative">
         {/* Glow ambient accent */}
         <div className="fixed top-12 right-24 w-96 h-96 bg-primary-600/10 blur-[130px] pointer-events-none" />
 
         {/* Page Header */}
-        <header className="mb-10">
+        <header className="mb-6 sm:mb-10">
           <div className="flex items-center gap-2 text-xs font-mono uppercase text-cyberCyan tracking-wider mb-2">
             <FaShieldAlt />
             <span>Security & Authentication Suite</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display tracking-tight text-white">
             Admin Credentials & Access
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 mt-1 font-mono">
@@ -134,9 +134,9 @@ const ManageSecurity = () => {
         </header>
 
         {/* Overview Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="p-6 rounded-3xl glass-card border border-white/10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl glass-card border border-white/10 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl shrink-0">
               <FaUserCheck />
             </div>
             <div className="min-w-0">
@@ -151,31 +151,31 @@ const ManageSecurity = () => {
             </div>
           </div>
 
-          <div className="p-6 rounded-3xl glass-card border border-white/10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-cyberCyan/10 border border-cyberCyan/20 flex items-center justify-center text-cyberCyan text-xl">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl glass-card border border-white/10 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-cyberCyan/10 border border-cyberCyan/20 flex items-center justify-center text-cyberCyan text-xl shrink-0">
               <FaServer />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="text-xs font-mono text-gray-400 uppercase">Auth Storage Engine</div>
               <div className="text-sm sm:text-base font-bold text-white font-display mt-0.5">
                 Supabase PostgreSQL
               </div>
-              <div className="text-[10px] font-mono text-gray-400 mt-0.5">
+              <div className="text-[10px] font-mono text-gray-400 mt-0.5 truncate">
                 Bcrypt Salted & Hashed (Cost 10)
               </div>
             </div>
           </div>
 
-          <div className="p-6 rounded-3xl glass-card border border-white/10 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400 text-xl">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl glass-card border border-white/10 flex items-center gap-4 sm:col-span-2 md:col-span-1">
+            <div className="w-12 h-12 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400 text-xl shrink-0">
               <FaKey />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="text-xs font-mono text-gray-400 uppercase">Session Security</div>
               <div className="text-sm sm:text-base font-bold text-white font-display mt-0.5">
                 JWT Bearer & Cookie
               </div>
-              <div className="text-[10px] font-mono text-gray-400 mt-0.5">
+              <div className="text-[10px] font-mono text-gray-400 mt-0.5 truncate">
                 Auto-refreshed upon password change
               </div>
             </div>
@@ -183,7 +183,7 @@ const ManageSecurity = () => {
         </div>
 
         {/* Credentials Form */}
-        <div className="max-w-3xl rounded-3xl glass-card p-6 sm:p-10 border border-white/10 shadow-2xl relative">
+        <div className="max-w-3xl rounded-2xl sm:rounded-3xl glass-card p-5 sm:p-8 lg:p-10 border border-white/10 shadow-2xl relative">
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Section 1: Email Update */}
             <div>

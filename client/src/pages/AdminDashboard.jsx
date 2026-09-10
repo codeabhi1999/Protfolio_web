@@ -177,19 +177,19 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex bg-darkBg text-white min-h-screen">
+    <div className="flex flex-col md:flex-row bg-darkBg text-white min-h-screen">
       <AdminSidebar />
 
       {/* Main Panel Content */}
-      <main className="flex-grow p-6 sm:p-10 overflow-y-auto max-w-[1600px]">
+      <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-10 overflow-y-auto max-w-[1600px]">
         
         {/* Header Ribbon */}
-        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 pb-6 border-b border-white/10">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-10 pb-4 sm:pb-6 border-b border-white/10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/10 border border-primary-500/20 text-xs font-mono font-semibold text-primary-300 uppercase tracking-widest mb-2">
               System Control Console
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black font-display tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display tracking-tight text-white">
               Executive Dashboard
             </h1>
             <p className="text-xs sm:text-sm text-gray-400 mt-1 font-mono">
@@ -197,11 +197,11 @@ const AdminDashboard = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={fetchDashboardData}
               disabled={loading}
-              className="px-4 py-2.5 rounded-xl font-mono text-xs font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl font-mono text-xs font-bold bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white transition-all flex items-center gap-2 cursor-pointer"
             >
               <FaSyncAlt className={loading ? 'animate-spin' : ''} />
               <span>Refresh Metrics</span>
@@ -218,21 +218,21 @@ const AdminDashboard = () => {
           <div className="space-y-10">
             
             {/* KPI Stat Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
               {statCards.map((card, idx) => (
                 <div
                   key={idx}
-                  className={`p-6 rounded-3xl glass-card relative overflow-hidden transition-all group ${
+                  className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl glass-card relative overflow-hidden transition-all group ${
                     card.highlight ? 'border-amber-500/50 shadow-glow-primary' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-[11px] font-mono uppercase font-bold text-gray-400 tracking-wider">
+                      <p className="text-[10px] sm:text-[11px] font-mono uppercase font-bold text-gray-400 tracking-wider">
                         {card.title}
                       </p>
                       <div className="flex items-baseline gap-2 mt-2">
-                        <span className="text-3xl sm:text-4xl font-black font-display text-white">
+                        <span className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-white">
                           {card.value}
                         </span>
                         {card.subValue && (
@@ -246,7 +246,7 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className={`p-4 rounded-2xl bg-gradient-to-tr ${card.color} text-white text-xl shadow-md group-hover:scale-110 transition-transform`}>
+                    <div className={`p-3.5 sm:p-4 rounded-2xl bg-gradient-to-tr ${card.color} text-white text-lg sm:text-xl shadow-md group-hover:scale-110 transition-transform`}>
                       {card.icon}
                     </div>
                   </div>
@@ -255,12 +255,12 @@ const AdminDashboard = () => {
             </div>
 
             {/* Recent Contact Messages Log */}
-            <div className="rounded-3xl glass-card overflow-hidden shadow-2xl border border-white/10">
+            <div className="rounded-2xl sm:rounded-3xl glass-card overflow-hidden shadow-2xl border border-white/10">
               
               {/* Header & Filter Controls */}
-              <div className="p-6 sm:p-8 border-b border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="p-4 sm:p-6 lg:p-8 border-b border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                  <h3 className="text-xl font-bold font-display text-white">
+                  <h3 className="text-lg sm:text-xl font-bold font-display text-white">
                     Client & Recruiter Messages
                   </h3>
                   <p className="text-xs font-mono text-gray-400 mt-1">
@@ -270,7 +270,7 @@ const AdminDashboard = () => {
 
                 <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                   {/* Status Filters */}
-                  <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
+                  <div className="flex bg-black/40 p-1 rounded-xl border border-white/5 overflow-x-auto">
                     {['All', 'New', 'Read'].map((st) => (
                       <button
                         key={st}
@@ -302,9 +302,9 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Messages Table */}
+              {/* Messages Table with Horizontal Scroll Safety */}
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+                <table className="w-full text-left text-sm min-w-[700px]">
                   <thead className="bg-[#0b101c] text-gray-400 uppercase text-[10px] font-mono font-bold tracking-wider border-b border-white/10">
                     <tr>
                       <th className="p-4 sm:px-6">Sender Details</th>
@@ -427,12 +427,12 @@ const AdminDashboard = () => {
         {/* Message Detail Modal */}
         <AnimatePresence>
           {selectedMessage && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="w-full max-w-2xl rounded-3xl glass-card p-8 relative overflow-hidden shadow-2xl border border-white/20"
+                className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl sm:rounded-3xl glass-card p-5 sm:p-8 relative shadow-2xl border border-white/20 my-auto"
               >
                 <div className="flex items-center justify-between pb-4 border-b border-white/10">
                   <div className="flex items-center gap-2">
@@ -453,7 +453,7 @@ const AdminDashboard = () => {
 
                 <div className="mt-6 space-y-4">
                   <div>
-                    <h3 className="text-xl font-bold font-display text-white">
+                    <h3 className="text-lg sm:text-xl font-bold font-display text-white">
                       {selectedMessage.subject || 'General Inquiry'}
                     </h3>
                     <div className="text-xs font-mono text-gray-400 mt-1 flex items-center gap-2">
@@ -470,10 +470,10 @@ const AdminDashboard = () => {
                     <div>
                       <div className="text-[10px] font-mono uppercase text-gray-400 font-bold">Sender Email</div>
                       <div className="text-sm font-mono text-cyberCyan mt-0.5 flex items-center gap-2">
-                        <span>{selectedMessage.email}</span>
+                        <span className="break-all">{selectedMessage.email}</span>
                         <button
                           onClick={() => handleCopyEmail(selectedMessage.email)}
-                          className="hover:text-white cursor-pointer"
+                          className="hover:text-white cursor-pointer shrink-0"
                           title="Copy Email"
                         >
                           <FaCopy size={11} />
@@ -490,17 +490,17 @@ const AdminDashboard = () => {
 
                   <div>
                     <div className="text-xs font-mono uppercase font-bold text-gray-400 mb-2">Message Body</div>
-                    <div className="p-5 rounded-2xl bg-black/40 border border-white/10 text-sm text-gray-200 leading-relaxed whitespace-pre-wrap font-sans">
+                    <div className="p-4 sm:p-5 rounded-2xl bg-black/40 border border-white/10 text-xs sm:text-sm text-gray-200 leading-relaxed whitespace-pre-wrap font-sans">
                       {selectedMessage.message}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-white/10">
                     <div className="flex items-center gap-2">
                       {selectedMessage.status === 'New' ? (
                         <button
                           onClick={() => handleUpdateStatus(selectedMessage._id, 'Read')}
-                          className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer"
+                          className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 transition-colors cursor-pointer text-center"
                         >
                           Mark as Read
                         </button>
@@ -511,7 +511,7 @@ const AdminDashboard = () => {
 
                     <a
                       href={`mailto:${selectedMessage.email}?subject=Re: ${encodeURIComponent(selectedMessage.subject || 'Portfolio Inquiry')}`}
-                      className="px-5 py-2 rounded-xl text-xs font-mono font-bold bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 transition-all flex items-center gap-2"
+                      className="w-full sm:w-auto justify-center px-5 py-2.5 rounded-xl text-xs font-mono font-bold bg-gradient-to-r from-primary-600 to-cyberCyan text-white shadow-glow-primary hover:opacity-90 transition-all flex items-center gap-2 text-center"
                     >
                       <FaReply size={11} /> Reply to {selectedMessage.name}
                     </a>
